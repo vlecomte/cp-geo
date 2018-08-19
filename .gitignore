@@ -5,6 +5,7 @@
 *.bcf
 *.blg
 *.bib.blg
+*.dvi
 *.fdb_latexmk
 *.fls
 *.log
