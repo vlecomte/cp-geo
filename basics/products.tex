@@ -1,0 +1,197 @@
+\section{Products and angles}
+Besides complex multiplication, which is nice to have but is not useful so often, there are two products involving vectors that are of critical importance: dot product and cross product. In this section, we'll look at their definition, properties and some basic use cases.
+
+\subsection{Dot product}\label{ss:dot}
+The dot product $\dotv{v}{w}$ of two vectors $\vv{v}$ and $\vv{w}$ can be seen as a measure of how similar their directions are. It is defined as \[\dotv{v}{w} = \normv{v}\normv{w} \cos\theta\] where $\normv{v}$ and $\normv{w}$ are the lengths of the vectors and $\theta$ is amplitude of the angle between $\vv{v}$ and $\vv{w}$.
+
+Since $\cos(-\theta) = \cos(\theta)$, the sign of the angle does not matter, and the dot product is symmetric: $\dotv{v}{w} = \dotv{w}{v}$.
+
+In general we will take $\theta$ in $[0,\pi]$, so that dot product is positive if $\theta < \pi/2$, negative if $\theta > \pi/2$, and zero if $\theta = \pi/2$, that is, if $\vv{v}$ and $\vv{w}$ are perpendicular.
+\centerFig{products0}
+
+If we fix $\normv{v}$ and $\normv{w}$ as above, the dot product is maximal when the vectors point in the same direction, because $\cos\theta = \cos(0) = 1$, and minimal when they point in opposite directions, because $\cos\theta = \cos(\pi) = -1$.
+
+\begin{mathy}
+Because of the definition of cosine in right triangles, dot product can be interpreted in an interesting way (assuming $\vv{v} \neq 0$): $\vv{v}\cdot\vv{w} = \normv{v}\projv{v}{w}$ where $\projv{v}{w} \coloneqq \normv{w}\cos\theta$ is the signed length of the projection of $\vv{w}$ onto the line that contains $\vv{v}$ (see examples below).
+In particular, this means that the dot product does not change if one of the vectors moves perpendicular to the other.
+\centerFig{products1}
+\end{mathy}
+
+Remarkably, the dot product can be computed by a very simple expression: if $\vv{v} = (v_x, v_y)$ and $\vv{w} = (w_x, w_y)$, then $\dotv{v}{w} = v_xw_x + v_yw_y$. We can implement it like this:
+\begin{lstlisting}
+T dot(pt v, pt w) {return v.x*w.x + v.y*w.y;}
+\end{lstlisting}
+
+Dot product is often used for testing if two vectors are perpendicular, since we just need to test whether $\dotv{v}{w} = 0$:
+\begin{lstlisting}
+bool isPerp(pt v, pt w) {return dot(v,w) == 0;}
+\end{lstlisting}
+
+It can also be used for finding the angle between two vectors, in $[0,\pi]$. Because of precision errors, we need to be careful not to call \lstinline|acos| with a value that is out of the allowable range $[-1,1]$.
+\begin{lstlisting}
+double angle(pt v, pt w) {
+    double cosTheta = dot(v,w) / abs(v) / abs(w);
+    return acos(max(-1.0, min(1.0, cosTheta)));
+}
+\end{lstlisting}
+Since C++17, this can be simplified to:
+\begin{lstlisting}
+double angle(pt v, pt w) {
+    return acos(clamp(dot(v,w) / abs(v) / abs(w), -1.0, 1.0));
+}
+\end{lstlisting}
+
+\subsection{Cross product}\label{ss:cross}
+The cross product $\crossv{v}{w}$ of two vectors $\vv{v}$ and $\vv{w}$ can be seen as a measure of how perpendicular they are. It is defined in 2D as \[\crossv{v}{w} = \normv{v}\normv{w} \sin\theta\] where $\normv{v}$ and $\normv{w}$ are the lengths of the vectors and $\theta$ is amplitude of the oriented angle from $\vv{v}$ to $\vv{w}$.
+
+Since $\sin(-\theta) = -\sin(\theta)$, the sign of the angle matters, the cross product changes sign when the vectors are swapped: $\crossv{w}{v} = -\crossv{v}{w}$. It is positive if $\vv{w}$ is ``to the left'' of $\vv{v}$, and negative is $\vv{w}$ is ``to the right'' of $\vv{v}$.
+
+\centerFig{products2}
+
+In general, we take $\theta$ in $(-\pi,\pi]$, so that the dot product is positive if $0 < \theta < \pi$, negative if $-\pi < \theta < 0$ and zero if $\theta = 0$ or $\theta = \pi$, that is, if $\vv{v}$ and $\vv{w}$ are aligned.
+
+\centerFig{products3}
+
+
+If we fix $\normv{v}$ and $\normv{w}$ as above, the cross product is maximal when the vectors are perpendicular with $\vv{w}$ on the left, because $\sin\theta = \sin(\pi/2) = 1$, and minimal when they are perpendicular with $\vv{w}$ on the right, because $\sin\theta = \sin(-\pi/2) = -1$.
+
+
+\begin{mathy}
+Because of the definition of sine in right triangles, cross product can also be interpreted in an interesting way (assuming $v \neq 0$): $\crossv{v}{w} = \normv{v}d_{\vv{v}}(\vv{w})$, where $d_{\vv{v}}(\vv{w}) = \normv{w}\sin\theta$ is the \emph{signed} distance from the line that contains $\vv{v}$, with positive values on the left side of $\vv{v}$.
+In particular, this means that the cross product doesn't change if one of the vectors moves parallel to the other.
+
+\centerFig{products4}
+\end{mathy}
+
+Like dot product, cross product has a very simple expression in cartesian coordinates: if $\vv{v} = (v_x, v_y)$ and $\vv{w} = (w_x, w_y)$, then $\crossv{v}{w} = v_xw_y - v_yw_x$:
+\begin{lstlisting}
+T cross(pt v, pt w) {return v.x*w.y - v.y*w.x;}
+\end{lstlisting}
+
+\begin{trick}
+    When using \lstinline|complex|, we can implement both \lstinline|dot()| and \lstinline|cross()| with this trick, which is admittedly quite cryptic, but requires less typing and is less prone to typos:
+    \begin{lstlisting}
+    T   dot(pt v, pt w) {return (conj(v)*w).x;}
+    T cross(pt v, pt w) {return (conj(v)*w).y;}
+    \end{lstlisting}
+
+    Here \lstinline|conj()| is the complex conjugate: the conjugate of a complex number $a+bi$ is defined as $a-bi$. To verify that the implementation is correct, we can compute \lstinline|conj(v)*w| as
+    \[(v_x-v_yi)\ast(w_x+w_yi) = (v_xw_x + v_yw_y) + (v_xw_y-v_yw_x)i\]
+    and see that the real and imaginary parts are indeed the dot product and the cross product.
+\end{trick}
+
+\subsubsection{Orientation}
+One of the main uses of cross product is in determining the relative position of points and other objects. For this, we define the function $\orient(A,B,C) = \crossv{AB}{AC}$. It is positive if $C$ is on the left side of $\vv{AB}$, negative on the right side, and zero if $C$ is on the line containing $\vv{AB}$. It is straightforward to implement:
+\begin{lstlisting}
+T orient(pt a, pt b, pt c) {return cross(b-a,c-a);}
+\end{lstlisting}
+
+In other words, $\orient(A,B,C)$ is positive if when going from $A$ to $B$ to $C$ we turn left, negative if we turn right, and zero if $A,B,C$ are collinear.
+
+\centerFig{products5}
+
+Its value is conserved by cyclic rotation, that is \[\orient(A,B,C) = \orient(B,C,A) = \orient(C,A,B)\] while swapping any two arguments switches the sign.
+
+As an example of use, suppose we want to check if point $X$ lies in the angle formed by lines $AB$ and $AC$. We can follow this procedure:
+\begin{enumerate}
+\item check that $\orient(A,B,C) \neq 0$ (otherwise the question is invalid);
+\item if $\orient(A,B,C) < 0$, swap $B$ and $C$;
+\centerFig{products6}
+\item $X$ is in the angle iff $\orient(A,B,X) \geq 0$ and $\orient(A,C,X) \leq 0$.
+\centerFig{products7}
+\end{enumerate}
+\begin{lstlisting}
+bool inAngle(pt a, pt b, pt c, pt x) {
+    assert(orient(a,b,c) != 0);
+    if (orient(a,b,c) < 0) swap(b,c);
+    return orient(a,b,x) >= 0 && orient(a,c,x) <= 0;
+}
+\end{lstlisting}
+
+Using $\orient()$ we can also easily compute the amplitude of an \emph{oriented angle} $\widehat{BAC}$, that is, the angle that is covered if we turn from $B$ to $C$ around $A$ counterclockwise.
+
+There are two cases: either $\orient(A,B,C) \geq 0$, with an angle in $[0,\pi]$, or $\orient(A,B,C) < 0$, with an angle in $(\pi,2\pi)$. In the first case, we can simply use the \lstinline|angle()| function we create based on the dot product; in the second case, we should take ``the other side'', so $2\pi$ minus that result.
+
+\centerFig{products8}
+
+\begin{lstlisting}
+double orientedAngle(pt a, pt b, pt c) {
+    if (orient(a,b,c) >= 0)
+        return angle(b-a, c-a);
+    else
+        return 2*M_PI - angle(b-a, c-a);
+}
+\end{lstlisting}
+
+Yet another use case is checking if a polygon $P_1\cdots P_n$ is convex: we compute the $n$ orientations of three consecutive vertices $\orient(P_i,P_{i+1},P_{i+2})$, wrapping around from $n$ to $1$ when necessary. The polygon is convex if they are all $\geq 0$ or all $\leq 0$, depending on the order in which the vertices are given.
+
+\centerFig{products9}
+
+\begin{lstlisting}
+bool isConvex(vector<pt> p) {
+    bool hasPos=false, hasNeg=false;
+    for (int i=0, n=p.size(); i<n; i++) {
+        int o = orient(p[i], p[(i+1)%n], p[(i+2)%n]);
+        if (o > 0) hasPos = true;
+        if (o < 0) hasNeg = true;
+    }
+    return !(hasPos && hasNeg);
+}
+\end{lstlisting}
+
+\subsubsection{Polar sort}\label{polar-sort}
+Because it can determine whether a vector points to the left or right of another, a common use of cross product is to sort vectors by direction. This is called polar sort: points are sorted in the order that a rotating ray emanating from the origin would touch them. Here, we will try to use cross product to safely sort the points by their arguments in $(-\half,\half]$, that is the order that would be given by the \lstinline|arg()| function for \lstinline|complex|.\footnote{Sorting by using the \lstinline|arg()| value would likely be a bad idea: there is no guarantee (that I know of) that vectors which are multiples of each other will have the same argument, because of precision issues. However, I haven't been to find an example where it fails for values small enough to be handled exactly with \lstinline|long long|.}
+
+\centerFig{products10}
+
+In general $\vv{v}$ should go before $\vv{w}$ when $\crossv{v}{w} > 0$, because that means $\vv{w}$ is to the left of $\vv{v}$ when looking from the origin. This test works well for directions that are sufficiently close: for example, $\crossv{v_2}{v_3} > 0$. But when they are more than $180\degree$ apart in the order, it stops working: for example $\crossv{v_1}{v_5} < 0$. So we first need to split the points in two halves according to their argument:
+
+\centerFig{products11}
+
+If we isolate the points with argument in $(0,\half]$ (region highlighted in blue) from those with argument in $(-\half, 0]$, then the cross product always gives the correct order.
+This gives the following algorithm:
+\begin{lstlisting}
+bool half(pt p) { // true if in blue half
+    assert(p.x != 0 || p.y != 0); // the argument of (0,0) is undefined
+    return p.y > 0 || (p.y == 0 && p.x < 0);
+}
+void polarSort(vector<pt> &v) {
+    sort(v.begin(), v.end(), [](pt v, pt w) {
+        return make_tuple(half(v), 0) <
+               make_tuple(half(w), cross(v,w));
+    });
+}
+\end{lstlisting}
+Indeed, the comparator will return \lstinline|true| if either $\vv{w}$ is in the blue region and $\vv{v}$ is not, or if they are in the same region and $\crossv{v}{w} > 0$.
+
+We can extend this algorithm in three ways:
+\begin{itemize}
+    \item Right now, points that are in the exact same direction are considered equal, and thus will be sorted arbitrarily. If we want, we can use their magnitude as a tie breaker:
+    \begin{lstlisting}
+    void polarSort(vector<pt> &v) {
+        sort(v.begin(), v.end(), [](pt v, pt w) {
+            return make_tuple(half(v), 0, sq(v)) <
+                   make_tuple(half(w), cross(v,w), sq(w));
+        });
+    }
+    \end{lstlisting}
+    With this tweak, if two points are in the same direction, the point that is further from the origin will appear later.
+    \item We can perform a polar sort around some point $O$ other than the origin: we just have to subtract that point $O$ from the vectors $\vv{v}$ and $\vv{w}$ when comparing them. This as if we translated the whole plane so that $O$ is moved to $(0,0)$:
+    \begin{lstlisting}
+    void polarSortAround(pt o, vector<pt> &v) {
+        sort(v.begin(), v.end(), [](pt v, pt w) {
+            return make_tuple(half(v-o), 0)) <
+                   make_tuple(half(w-o), cross(v-o, w-o));
+        });
+    }
+    \end{lstlisting}
+    \item Finally, the starting angle of the ordering can be modified easily by tweaking function \lstinline|half()|. For example, if we want some vector $\vv{v}$ to be the first angle in the polar sort, we can write:
+    \begin{lstlisting}
+    pt v = {/* whatever you want except 0,0 */};
+    bool half(pt p) {
+        return cross(v,p) < 0 || (cross(v,p) == 0 && dot(v,p) < 0);
+    }
+    \end{lstlisting}
+    This places the blue region like this:
+    \centerFig{products12}
+\end{itemize}

@@ -1,0 +1,9 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=0.4]
+    \draw[->] (-4,0,0) -- (4,0,0) node[below] {$x$};
+    \draw[->] (0,-4,0) -- (0,4,0) node[below] {$y$};
+    \draw[->] (0,0,-4) -- (0,0,4) node[above] {$z$};
+    \coordinate (P) at (1,3,2);
+    \node[point, label={right,xshift=.1cm:{$P=(1,3,2)$}}] at (P) {};
+    \draw[dashed] (P) -- (0,3,2) (P) -- (1,0,2) (P) -- (1,3,0);
+    \draw[dashed] (1,3,0) -- (0,3,0) -- (0,3,2) -- (0,0,2) -- (1,0,2) -- (1,0,0) -- cycle;
+\end{tikzpicture}

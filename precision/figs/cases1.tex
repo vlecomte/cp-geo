@@ -1,0 +1,11 @@
+\input{tikz/precision-setup}
+\begin{tikzpicture}[scale=0.8]
+\figBasisCircleCircle
+\tkzMarkAngle[size=.6cm](C2,C1,J)
+\tkzDrawSegments(C1,C2 C1,J C2,J)
+
+\tkzLabelSegment[above left](C1,J){$r_1$}
+\tkzLabelSegment[above right](C2,J){$r_2$}
+\tkzLabelSegment[below,pos=0.6](C1,C2){$d$}
+\tkzLabelAngle[pos=.9](C2,C1,J){$\alpha$}
+\end{tikzpicture}

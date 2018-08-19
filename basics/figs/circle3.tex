@@ -1,0 +1,21 @@
+\begin{tikzpicture}
+\tkzInit[xmin=-2.5,xmax=2.5,ymin=-2.5,ymax=2.5]
+\tkzClip
+\tkzDefPoints{0/0/C, 2/0/R, 1.2/-5/A, 1.2/5/B}
+\tkzInterLC(A,B)(C,R) \tkzGetPoints{J}{I}
+\tkzDefMidPoint(I,J) \tkzGetPoint{P}
+
+\tkzDrawCircle(C,R)
+\tkzDrawSegments(A,B C,J C,P)
+\tkzMarkRightAngle(C,P,J)
+\tkzDrawPoints(C,P,I,J)
+
+\tkzLabelPoint[left](C){$O$}
+\tkzLabelPoint[right](P){$P$}
+\tkzLabelPoint[above right](J){$J$}
+\tkzLabelPoint[below right](I){$I$}
+\tkzLabelSegment[above left](C,J){$r$}
+\tkzLabelSegment[below](C,P){$d$}
+\tkzMarkSegments[mark=||, size=3pt](P,I P,J)
+\tkzLabelSegment[right](P,J){$h$}
+\end{tikzpicture}

@@ -1,0 +1,126 @@
+\section{Segments}
+In this section we will discuss how to compute intersections and distances involving line segments.
+
+\subsection{Point on segment}\label{onsegment}
+As an introduction, let's first see how to check if a point $P$ lies on segment $[AB]$.
+
+For this we will first define a useful subroutine \lstinline|inDisk()| that checks if a point $P$ lies on the disk of diameter $[AB]$. We know that the points on a disk are those which form angles $\geq 90\degree$ with the endpoints of a diameter. This can easily be checked by using dot product: $\widehat{APB} \geq 90\degree$ is equivalent $\dotv{PA}{PB} \leq 0$ (with the exception of $P=A,B$ in which case angle $\widehat{APB}$ is undefined).
+
+\centerFig{segment0}
+
+\begin{lstlisting}
+bool inDisk(pt a, pt b, pt p) {
+    return dot(a-p, b-p) <= 0;
+}
+\end{lstlisting}
+
+\begin{mathy}
+In fact, we can notice that $\dotv{PA}{PB}$ is equal to the power of point $P$ with respect to the circle of diameter $[AB]$: if $O$ is the center of that circle and $r$ its radius, then $\dotv{PA}{PB} = |OP|^2 - r^2$. This makes it perfect for our purpose.
+\end{mathy}
+
+With this subroutine in hand, it is easy to check whether $P$ is on segment $[AB]$: this is the case if and only if $P$ is on line $AB$ and also on the disk whose diameter is $AB$ (and thus is in the part the line between $A$ and $B$).
+
+\begin{center}
+\includeFig{segment1}
+
+intersection of line and disk $=$ segment
+\end{center}
+
+\begin{lstlisting}
+bool onSegment(pt a, pt b, pt p) {
+    return orient(a,b,p) == 0 && inDisk(a,b,p);
+}
+\end{lstlisting}
+
+\subsection{Segment-segment intersection}\label{ss:seg-seg-inter}
+Finding the precise intersection between two segments $[AB]$ and $[CD]$ is quite tricky: many configurations are possible and the intersection itself might be empty, a single point or a whole segment.
+
+To simplify things, we will separate the problem in two distinct cases:
+\begin{enumerate}
+\item Segments $[AB]$ and $[CD]$ intersect \term{properly}, that is, their intersection is one single point which is not an endpoint of either segment. This is easy to test with \lstinline|orient()|.
+\item In all other cases, the intersection, if it exists, is determined by the endpoints. If it is a single point, it must be one of $A,B,C,D$, and if it is a whole segment, it will necessarily start and end with points in $A,B,C,D$.
+\end{enumerate}
+
+Let's deal with the first case: there is a single proper intersection point $I$. To test this, it suffices to test that $A$ and $B$ are on either side of line $CD$, and that $C$ and $D$ are on either side of line $AB$. If the test is positive, we find $I$ as a weighted average of $A$ and $B$.\footnote{We can understand the formula as the center of gravity of point $A$ with weight $|o_B|$ and point $B$ with weight $|o_A|$, which gives us a point $I$ on $[AB]$ such that $|IA|/|IB| = o_A/o_B$.}
+
+\begin{center}
+\includeFig{segment2}
+
+proper intersection
+\end{center}
+\begin{lstlisting}
+bool properInter(pt a, pt b, pt c, pt d, pt &out) {
+    double oa = orient(c,d,a),
+           ob = orient(c,d,b),
+           oc = orient(a,b,c),
+           od = orient(a,b,d);
+    // Proper intersection exists iff opposite signs
+    if (oa*ob < 0 && oc*od < 0) {
+        out = (a*ob - b*oa) / (ob-oa);
+        return true;
+    }
+    return false;
+}
+\end{lstlisting}
+
+Then to deal with the second case, we will test for every point among $A,B,C,D$ if it is on the other segment. If it is, we add it to a set $S$. Clearly, an endpoint cannot be in the middle of the intersection segment, so $S$ will always contain 0, 1 or 2 distinct points, describing an empty intersection, a single intersection point or an intersection segment.
+
+\centerFig{segment3}
+
+\begin{lstlisting}
+// To create sets of points we need a comparison function
+struct cmpX {
+    bool operator()(pt a, pt b) {
+        return make_pair(a.x, a.y) < make_pair(b.x, b.y);
+    }
+};
+
+set<pt,cmpX> inters(pt a, pt b, pt c, pt d) {
+    pt out;
+    if (properInter(a,b,c,d,out)) return {out};
+    set<pt,cmpX> s;
+    if (onSegment(c,d,a)) s.insert(a);
+    if (onSegment(c,d,b)) s.insert(b);
+    if (onSegment(a,b,c)) s.insert(c);
+    if (onSegment(a,b,d)) s.insert(d);
+    return s;
+}
+\end{lstlisting}
+
+\subsection{Segment-point distance}
+To find the distance between segment $[AB]$ and point $P$, there are two cases: either the closest point to $P$ on $[AB]$ is strictly between $A$ and $B$, or it is one of the endpoints ($A$ or $B$). The first case happens when the orthogonal projection of $P$ onto $AB$ is between $A$ and $B$.
+
+\centerFig{segment4}
+
+To check this, we can use the \lstinline|cmpProj()| method in \lstinline|line|.%\footnote{If desired, we can also eliminate the need for \lstinline|line| by using the direction vector \lstinline|v = b-a| to perform the computations directly.}
+\begin{lstlisting}
+double segPoint(pt a, pt b, pt p) {
+    if (a != b) {
+        line l(a,b);
+        if (l.cmpProj(a,p) && l.cmpProj(p,b)) // if closest to projection
+            return l.dist(p);                 // output distance to line
+    }
+    return min(abs(p-a), abs(p-b)); // otherwise distance to A or B
+}
+\end{lstlisting}
+
+\subsection{Segment-segment distance}
+We can find the distance between two segments $[AB]$ and $[CD]$ based on the segment-point distance if we separate into the same two cases as for segment-segment intersection:
+\begin{enumerate}
+\item Segments $[AB]$ and $[CD]$ intersect properly, in which case the distance is of course 0.
+\item In all other cases, the shortest distance between the segments is attained in at least one of the endpoints, so we only need to test the four endpoints and report the minimum.
+\end{enumerate}
+
+This can be readily implemented with the functions at our disposal.
+\begin{lstlisting}
+double segSeg(pt a, pt b, pt c, pt d) {
+    pt dummy;
+    if (properInter(a,b,c,d,dummy))
+        return 0;
+    return min({segPoint(a,b,c), segPoint(a,b,d),
+                segPoint(c,d,a), segPoint(c,d,b)});
+}
+\end{lstlisting}
+
+Some possible cases are illustrated below.
+\centerFig{segment5}

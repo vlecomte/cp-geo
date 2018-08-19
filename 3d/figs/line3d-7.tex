@@ -1,0 +1,13 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1.2]
+    \drawGrid{-1}{2}{-1}{3}
+    \coordinate (A) at (0,0,0);
+    \coordinate (B) at (0,1,0);
+    \draw (A) ++(0,0,-2) -- ++(0,0,4) node[right] {$l_2$};
+    \draw (-1.5,1,0) node[above] {$l_1$} -- ++(4,0,0);
+    \draw[dashed] (A) node[left] {$C_2$} -- (B) node[below, xshift=.2cm] {$C_1$};
+    \draw (A) -- ++(0,0,.2) -- ++(0,.2,0) -- ++(0,0,-.2) -- cycle;
+    \draw (B) -- ++(0,-.2,0) -- ++(-.2,0,0) -- ++(0,.2,0) -- cycle;
+    \draw[-stealth] (0,-.5,.4) -- ++(0,0,1) node[pos=.5, left] {$\vv{d_2}$};
+    \draw[-stealth] (2,2,0) ++(.3,-.5,0) -- ++(-1,0,0) node[pos=.5, below, xshift=.2cm] {$\vv{d_1}$};
+    \draw[-stealth] (0,1.7,0) -- ++(0,1,0) node[pos=.5, above] {$\vv{n}$};
+\end{tikzpicture}

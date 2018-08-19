@@ -1,0 +1,17 @@
+\input{tikz/precision-setup}
+\begin{tikzpicture}
+\imprecise{0,0}{A}
+\imprecise{0.8,0.2}{B}
+\imprecise{3,-2}{C}
+\imprecise{3.4,-2.4}{D}
+\tkzDefPoints{0/0.15/A1, 0/-0.15/A2, 0.8/0.1/B1, 0.8/0.4/B2, 3.1/-2/C1, 3/-2.1/C2, 3.2/-2.4/D1, 3.4/-2.25/D2, -0.5/0.8/O}
+
+\tkzDrawSegments[add=6 and 6](A1,B1)
+\tkzDrawSegments[add=4 and 4](A2,B2)
+\tkzDrawSegments[add=15 and 2](C1,D1)
+\tkzDrawSegments[add=20 and 5](C2,D2)
+\tkzDrawCircle[R, color=gray, dashed](O,3.5cm)
+
+\tkzLabelPoints[above=0.25](A,B)
+\tkzLabelPoints[above right=0.15](C,D)
+\end{tikzpicture}

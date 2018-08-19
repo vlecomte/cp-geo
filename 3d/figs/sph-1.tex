@@ -1,0 +1,35 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1.8]
+    \coordinate (O) at (0,0,0);
+    \drawSphere{1}{22.5}{22.5}{0}
+    \draw[gray,thick,->] (1,0,0) -- (2,0,0) node[below] {$x$};
+    %\draw[gray,thick,->] (0,1,0) -- (0,2,0) node[below] {$y$};
+    %\draw[gray,thick,->] (0,0,1) -- (0,0,2) node[above] {$z$};
+    
+    \tdplotdefinepoints(0,0,0)(1,0,0)(.383,.924,0)
+    \tdplotdrawpolytopearc[semithick,->]{.4}{below}{$\lambda$}
+    \tdplotdrawpolytopearc[semithick,dashed]{1}{}{}
+    \tdplotdefinepoints(0,0,0)(.383,.924,0)(.354,.854,.383)
+    \tdplotdrawpolytopearc[semithick,->]{.6}{right,yshift=-.05cm}{$\phi$}
+    \tdplotdrawpolytopearc[semithick,dashed]{1}{}{}
+    \sph{H}{1.2}{0}{67.5}
+    \sph{I}{1.2}{22.5}{67.5}
+    \sph{J}{1}{22.5}{67.5}
+    \draw[semithick] (O) -- (H) (O) -- (I);
+    \node[point] at (J) {};
+    \begin{pgfonlayer}{behind}
+        \draw[gray,thick] (-2,0,0) -- (-1,0,0);% (0,-2,0) -- (0,-1,0);% (0,0,-1.5) -- (0,0,-1);
+    \end{pgfonlayer}
+    \begin{pgfonlayer}{middle}
+        \draw[gray,thick] (-1,0,0) -- (1,0,0);% (0,-1,0) -- (0,1,0);% (0,0,-1) -- (0,0,1);
+    \end{pgfonlayer}
+    
+    \node[point,lg] at (0,0,-1) {};
+    \node[point,gray] at (0,0,1) {};
+    
+    \begin{scope}[tdplot_screen_coords]
+        \node[above] at (0,1) {North};
+        \node[below] at (0,-1) {South};
+        \node[above left] at (-1,0) {West};
+        \node[below right] at (1,0) {East};
+    \end{scope}
+\end{tikzpicture}

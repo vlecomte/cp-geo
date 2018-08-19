@@ -1,0 +1,6 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1.2]
+    \foreach \z/\d in {-.8/d-1, 0/d, .8/d+1} {
+        \fill[lg, opacity=.8] (1,1,\z) -- (-1,1,\z) -- (-1,-1,\z) -- (1,-1,\z) -- cycle;
+        \node[right] at (-1,1,\z) {$ax+by+cz=\d$};
+    }
+\end{tikzpicture}

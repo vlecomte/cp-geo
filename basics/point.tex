@@ -1,0 +1,182 @@
+\section{Points and vectors}
+
+In this section, we will first introduce complex numbers, because they are a useful way to think about and represent 2D points, especially when rotations are involved. We will then present two different ways to represent points in code: one by creating our own structure, the other by using the C++ built-in \lstinline|complex| type. Either can be used to run the code samples in this book, though \lstinline|complex| requires less typing.
+
+\subsection{Complex numbers}\label{complex}
+Complex numbers are an extension of the real numbers with a new unit, the \term{imaginary unit}, noted $i$. A complex number is usually written as $a + bi$ (for $a,b \in\real$) and we can interpret it geometrically as point $(a,b)$ in the two-dimensional plane, or as a vector with components $\vv{v}=(a,b)$. We will sometimes use all these notations interchangeably. The set of complex numbers is written as $\complex$.
+
+\centerFig{point0}
+
+\subsubsection{Basic operations}
+Complex numbers are added, subtracted and multiplied by scalars as if $i$ were an unknown variable. Those operations are equivalent to the same operations on vectors.
+\begin{align*}
+(a+bi) + (c+di) &= (a+c) + (b+d)i &\mbox{(addition)} \\
+(a+bi) - (c+di) &= (a-c) + (b-d)i &\mbox{(subtraction)} \\
+k(a+bi) &= (ka) + (kb)i &\mbox{(multiplication by scalar)}
+\end{align*}
+Geometrically, adding or subtracting two complex numbers $\vv{v}=(a,b)$ and $\vv{w}=(c,d)$ corresponds to making $\vv{w}$ or its opposite start at the end of $\vv{v}$, while multiplying $\vv{v}$ by a positive real $k$ corresponds to multiplying its length by $k$ but keeping the same direction.
+
+\centerFig{point1}
+\centerFig{point5}
+
+\subsubsection{Polar form}\label{polar-form}
+The polar form is another way to represent complex numbers. To denote a complex $\vv{v} = a+bi$, instead of looking at the real and complex parts, we look at the \term{absolute value} $r$, the distance from the origin (the length of vector $\vv{v}$), and the \term{argument} $\phi$, the amplitude of the angle that $\vv{v}$ forms with the positive real axis.
+
+\centerFig{point2}
+
+For a given complex number $a+bi$, we can compute its polar form as
+\begin{align*}
+r &= |a+bi| = \sqrt{a^2+b^2}\\
+\phi &= \arg(a+bi) = \atanTwo(b,a)
+\end{align*}
+and conversely, a complex number with polar coordinates $r,\phi$ can be written
+\[r\cos\phi+(r\sin\phi)i = r(\cos\phi + i\sin\phi) \eqqcolon r\cis\phi\]
+where $\cis\phi = \cos\phi+i\sin\phi$ is the unit vector that forms an angle of amplitude $\phi$ with the positive real axis.
+
+Note that this is not a one-to-one mapping. Firstly, adding or subtracting $\turn$ from $\phi$ doesn't change the point being represented; to solve this problem, $\phi$ is generally taken in $(-\half,\half]$. Secondly, when $r=0$, all values of $\phi$ represent the same point.
+
+\subsubsection{Multiplication}
+
+Complex multiplication is easiest to understand using the polar form. When multiplying two complex numbers, their absolute values are multiplies, while their arguments are added. In other words,
+\[(r_1\cis\phi_1) \ast (r_2\cis\phi_2) = (r_1r_2) \cis (\phi_1+\phi_2).\]
+
+In the illustration below, $|\vv{v}\ast\vv{w}| = |\vv{v}||\vv{w}|$ and the angle between the $x$-axis and $\vv{v}$ is the same as the angle between $\vv{w}$ and $\vv{v}\ast\vv{w}$.
+
+\centerFig{point3}
+
+Remarkably, multiplication is also very simple to compute from the coordinates: it works a bit like polynomial multiplication, except that we transform $i^2$ into $-1$.
+\begin{align*}
+(a+bi)\ast(c+di) &= ac + a(di) + (bi)c + (bi)(di)\\
+&= ac + adi + bci + (bd)i^2\\
+&= ac + (ad+bc)i + (bd)(-1)\\
+&= (ac-bd) + (ad+bc)i
+\end{align*}
+
+\exoWithSolution{
+    Prove that $(r_1\cis\phi_1) \ast (r_2\cis\phi_2) = (r_1r_2) \cis (\phi_1+\phi_2)$ using this new definition of product.
+}{
+    \protect \begin{align*}
+        (r_1\cis\phi_1)&\ast(r_2\cis\phi_2)\\
+        &=\left(r_1\cos\phi_1 + (r_1\sin\phi_1)i\right)
+            \ast \left(r_2\cos\phi_2 + (r_2\sin\phi_2)i\right)\\
+        &= r_1r_2[(\cos\phi_1\cos\phi_2 - \sin\phi_1\sin\phi_2)\\
+        &\qquad + (\cos\phi_1\sin\phi_2 + \sin\phi_1\cos\phi_2)i] \\
+        &= r_1r_2(\cos(\phi_1 + \phi_2) + i\sin(\phi_1+\phi_2)) \\
+        &= r_1r_2 \cis(\phi_1 + \phi_2)
+    \protect \end{align*}
+}{polar-multiplication}
+
+Another way to explain complex multiplication is to say that multiplying a number by $r\cis\phi$ will scale it by $r$ and rotate it by $\phi$ counterclockwise. For example, multiplying a number by $\frac{1}{2}i = \frac{1}{2}\cis\quarter$ will divide its length by 2 and rotate it $90\degree$ counterclockwise.
+
+\centerFig{point4}
+
+%This also makes defining division very intuitive: just \emph{divide} the absolute values and \emph{subtract} the arguments: $(r_1\cis\phi_1) / (r_2\cis\phi_2) = \frac{r_1}{r_2} \cis(\phi_1-\phi_2)$. Without going through polar coordinates, it can also be written as
+%\[z/w = \frac{z\ast\conj{w}}{\norm{w}^2}\]
+%where $\conj{w}$ is the \term{complex conjugate} of $w$, an operation that changes the sign of the complex part: $\conj{a+bi} = a-bi$.
+
+\subsection{Point representation}\label{ss:point-representation}
+In this section we explain how to implement the point structure that we will use throughout the rest of the book. The code is only available in C++ at the moment, but should be easy to translate in most languages.% Our long-term plan is to offer code snippets in other languages as well.
+
+\subsubsection{With a custom structure}
+Let us first declare the basic operations: addition, subtraction, and multiplication/division by a scalar.
+\begin{lstlisting}
+typedef double T;
+struct pt {
+    T x,y;
+    pt operator+(pt p) {return {x+p.x, y+p.y};}
+    pt operator-(pt p) {return {x-p.x, y-p.y};}
+    pt operator*(T d) {return {x*d, y*d};}
+    pt operator/(T d) {return {x/d, y/d};} // only for floating-point
+};
+\end{lstlisting}
+For generality, we declare type \lstinline|T|: the type of the the coordinates. Generally, either \lstinline|double| or \lstinline|long long| (for exact computations with integers) is appropriate. \lstinline|long double| can also be very useful if extra precision is required. The cases where integers cannot be used are often quite clear (e.g. division by scalar, rotation by arbitrary angle).
+
+We define some comparators for convenience:
+\begin{lstlisting}
+bool operator==(pt a, pt b) {return a.x == b.x && a.y == b.y;}
+bool operator!=(pt a, pt b) {return !(a == b);}
+\end{lstlisting}
+Note that there is no obvious way to define a $<$ operator on 2D points, so we will only define it as needed.
+
+Here are some functions linked to the absolute value:
+\begin{lstlisting}
+T sq(pt p) {return p.x*p.x + p.y*p.y;}
+double abs(pt p) {return sqrt(sq(p));}
+\end{lstlisting}
+The squared absolute value \lstinline|sq()| can be used to compute and compare distances quickly and exactly if the coordinates are integers. We use \lstinline|double| for \lstinline|abs()| because it will return floating-point values even for integer coordinates (if you are using \lstinline|long double| you should probably change it to \lstinline|long double|).
+
+We also declare a way to print out points, for debugging purposes:
+\begin{lstlisting}
+ostream& operator<<(ostream& os, pt p) {
+    return os << "("<< p.x << "," << p.y << ")";
+}
+\end{lstlisting}
+
+Some example usage:
+\begin{lstlisting}
+pt a{3,4}, b{2,-1};
+cout << a+b << " " << a-b << "\n"; // (5,3) (1,5)
+cout << a*-1 << " " << b/2 << "\n"; // (-3,-4) (1.5,2)
+\end{lstlisting}
+
+We also define a signum function, which will be useful for several applications. It returns \lstinline|-1| for negative numbers, \lstinline|0| for zero, and \lstinline|1| for positive numbers.
+\begin{lstlisting}
+template <typename T> int sgn(T x) {
+    return (T(0) < x) - (x < T(0));
+}
+\end{lstlisting}
+
+\subsubsection{With the C++ \lstinline|complex| structure}
+Using the \lstinline|complex| type in C++ can be a very practical choice in contests such as ACM-ICPC where everything must be typed from scratch, as many of the operations we need are already implemented and ready to use.
+
+The code below defines a \lstinline|pt| with similar functionality.
+\begin{lstlisting}
+typedef double T;
+typedef complex<T> pt;
+#define x real()
+#define y imag()
+\end{lstlisting}
+
+\begin{warning}
+As with the custom structure, you should choose the appropriate coordinate type for \lstinline|T|. However, be warned that if you define it as an integral type like \lstinline|long long|, some functions which should always return floating-point numbers (like \lstinline|abs()| and \lstinline|arg()|) will be truncated to integers.
+\end{warning}
+
+The macros \lstinline|x| and \lstinline|y| are shortcuts for accessing the real and imaginary parts of a number, which are used as $x$- and $y$-coordinates:
+\begin{lstlisting}
+pt p{3,-4};
+cout << p.x << " " << p.y << "\n"; // 3 -4
+// Can be printed out of the box
+cout << p << "\n"; // (3,-4)
+\end{lstlisting}
+
+Note that the coordinates can't be modified individually:
+\begin{lstlisting}
+pt p{-3,2};
+p.x = 1; // doesn't compile
+p = {1,2}; // correct
+\end{lstlisting}
+
+We can perform all the operations that we have with the custom structure and then some more. Of course, we can also use complex multiplication and division. Note however that we can only multiply/divide by scalars of type \lstinline|T| (so if \lstinline|T| is \lstinline|double|, then \lstinline|int| will not work).
+\begin{lstlisting}
+pt a{3,1}, b{1,-2};
+a += 2.0*b; // a = (5,-3)
+cout << a*b << " " << a/-b << "\n"; // (-1,-13) (-2.2,-1.4)
+\end{lstlisting}
+
+There are also useful methods for dealing with polar coordinates:
+\begin{lstlisting}
+pt p{4,3};
+// Get the absolute value and argument of point (in [-pi,pi])
+cout << abs(p) << " " << arg(p) << "\n"; // 5 0.643501
+// Make a point from polar coordinates
+cout << polar(2.0, -M_PI/2) << "\n"; // (1.41421,-1.41421)
+\end{lstlisting}
+
+\begin{warning}
+The \lstinline|complex| library provides function \lstinline|norm|, which is mostly equivalent to the \lstinline|sq| that we defined earlier. However, it is not guaranteed to be exact for \lstinline|double|: for example, the following expression evaluates to \lstinline|false|.
+\begin{lstlisting}
+norm(complex<double>(2.0,1.0)) == 5.0
+\end{lstlisting}
+
+Therefore, to be safe you should implement a separate \lstinline|sq()| function as for the custom structure (or you can wait use function \lstinline|dot()| that we will define later).
+\end{warning}

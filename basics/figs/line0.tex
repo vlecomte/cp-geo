@@ -1,0 +1,15 @@
+\begin{tikzpicture}[scale=0.7]
+\tkzDefPoints{0/0/P, 2/1/Q, -0.5/1/perp}
+\tkzDefPointsBy[translation = from P to perp](P,Q){}
+\tkzDefPointsBy[translation = from P to perp](P',Q'){}
+\tkzDefPointsBy[translation = from perp to P](P,Q){p',q'}
+\tkzDefPointsBy[translation = from perp to P](p',q'){}
+
+\tkzDrawSegment[add=1 and 1](P,Q)
+\tkzDrawSegments[gray, dashed, add=.5 and .5](P',Q' P'',Q'' p',q' p'',q'')
+\tkzLabelSegment[sloped, above=-.1](P,Q){$ax+by = c$}
+\tkzLabelSegment[sloped, above=-.1, gray](P',Q'){$ax+by = c+1$}
+\tkzLabelSegment[sloped, above=-.1, gray](P'',Q''){$ax+by = c+2$}
+\tkzLabelSegment[sloped, above=-.1, gray](p',q'){$ax+by = c-1$}
+\tkzLabelSegment[sloped, above=-.1, gray](p'',q''){$ax+by = c-2$}
+\end{tikzpicture}

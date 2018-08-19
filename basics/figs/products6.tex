@@ -1,0 +1,14 @@
+\input{tikz/products-setup}
+\newcommand{\fig}[5]{
+    \begin{tikzpicture}[scale=0.4]
+    \abcProducts{#1}{#2}{#3}{#4}{#5}
+    %\tkzDefPoints{#3/X}
+    %\tkzDrawPoint(X)
+    %\tkzLabelPoints[above right](X)
+    \end{tikzpicture}
+}%
+\begin{tabu} to .8\textwidth {X[c]X[c]}
+\fig{3/1}{1/2}{B}{C}{posBack} & \fig{1.2/2.4}{2.1/.7}{C}{B}{negBack}\\
+$\orient(A,B,C) > 0$ & $\orient(A,B,C) < 0$\\
+no swap & swap\\
+\end{tabu}

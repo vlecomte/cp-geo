@@ -1,0 +1,26 @@
+\section{Small imprecisions can break algorithms}
+In this section, we explore ways in which small imprecisions can modify the behavior of an algorithm in ways other than just causing further imprecisions.
+
+\subsection{When making binary decisions}
+The first scenario we will explore is when we have to make clear-cut decisions, such as deciding if two objects touch.
+
+{
+    \newcommand{\eCutoff}{\epsilon_{\mathrm{cutoff}}}
+    \newcommand{\eError}{\epsilon_{\mathrm{error}}}
+    \newcommand{\eChance}{\epsilon_{\mathrm{chance}}}
+    Let's say we have a line $l$ and a point $P$ computed imprecisely, and we want to figure out if the point lies on the line. Obviously, we cannot simply check if the point we have computed lies on the line, as it might be just slightly off due to imprecision. So the usual approach is to compute the distance from $P$ to $l$ and then figure out if that distance is less than some small value like $\eCutoff=10^{-9}$.
+
+    While this approach tends to works pretty well in practice, to be sure that this solution works in every case and choose $\eCutoff$ properly,\footnote{And motivated problem setters \emph{do} tend to find the worst cases.} we need to know two things. First, we need to know $\eError$, the biggest imprecision that we might make while computing the distance. Secondly, and more critically, we need to know $\eChance$, the smallest distance that point $P$ might be from $l$ while not being on it, in other words, the closest distance that it might be from $l$ ``by coincidence''.
+
+    Only once we have found those two values, and made sure that $\eError < \eChance$, can we then choose the value of $\eCutoff$ within $[\eError,\eChance)$.\footnote{In practice you should try to choose $\eCutoff$ so that there is a factor of safety on both sides, in case you made mistakes while computing $\eError$ or $\eChance$.} Indeed, if $\eCutoff < \eError$, there is a risk that $P$ is on $l$ but we say it is not, while if $\eCutoff \geq \eChance$ there is a risk that $P$ is not on $l$ but we say it is.
+
+    Even though $\eError$ can be easily found with some basic knowledge of floating-point arithmetic and a few multiplications (see next section), finding $\eChance$ is often very difficult. It depends directly on which geometric operations were done to find $P$ (intersections, tangents, etc.), and in most cases where $\eChance$ can be estimated, it is in fact possible to make the comparison entirely with integers, which is of course the preferred solution.
+}
+
+
+\subsection{By violating basic assumptions}
+Many algorithms rely on basic geometric axioms in order to provide their results, even though those assumptions are not always easy to track down. This is especially the case for incremental algorithms, like algorithms for building convex hulls. And when those assumptions are violated by using floating-point numbers, this can make algorithms break down in big ways.
+
+Problems of this type typically happen in situation when points are very close together, or are nearly collinear/coplanar. The ways to solve the problem depend a lot on what the algorithm, but tricks like eliminating points that are too close together, or adding random noise to the coordinates to avoid collinearity/coplanarity can be very useful.
+
+For concrete examples of robustness problems and a look into the weird small-scale behavior of some geometric functions, see \cite{classroom-robustness}.

@@ -1,0 +1,22 @@
+\newcommand{\fig}[3]{
+    \begin{tikzpicture}[scale=0.7]
+    \tkzDefPoints{0/0/O, 0/0/P, 2/1/Q, -1.1/2.2/ab, -1/2/ab'}
+    \tkzDefMidPoint(P,Q) \tkzGetPoint{M}
+    \tkzDefPointBy[translation = from O to ab](M) \tkzGetPoint{Mup}
+    \tkzDefPointBy[translation = from ab' to O](M) \tkzGetPoint{Mdown}
+
+    \tkzDrawSegment[add=1 and 1, #1](P,Q)
+    \tkzDrawPoints(P,Q)
+
+    \tkzLabelPoints[above](P,Q)
+    \tkzLabelPoint[above=-.05](#2){``positive side''}
+    \tkzLabelPoint[below=-.05](#2){$ax+by-c > 0$}
+    \tkzLabelPoint[above=-.05](#3){``negative side''}
+    \tkzLabelPoint[below=-.05](#3){$ax+by-c < 0$}
+    \end{tikzpicture}
+}%
+\begin{tabu} to .9\linewidth {X[c]X[c]}
+\fig{->}{Mup}{Mdown} & \fig{<-}{Mdown}{Mup}\\\\
+created as \lstinline|line(p,q)| & created as \lstinline|line(q,p)| \\
+$\vv{v} = \vv{PQ}$ & $\vv{v} = \vv{QP}$\\
+\end{tabu}

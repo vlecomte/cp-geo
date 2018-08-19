@@ -1,0 +1,20 @@
+\newcommand{\fig}[1]{
+    \begin{tikzpicture}[tdplot_main_coords, scale=1]
+        \coordinate (O) at (0,0,0);
+        \coordinate (P) at (-1.5,-1,0);
+        \coordinate (P') at (#1);
+        \drawGrid{-2}{2}{-2}{2}
+        \draw (P) -- (P');
+        \draw (-1.5,0,0) ++(.2,0,0) -- ++(0,-.2,0) -- ++(-.2,0,0);
+        \node[point, label=below:{$O$}] at (O) {};
+        \node[point, label=left:{$P$}] at (P) {};
+        \node[point, label=right:{$P'$}] at (P') {};
+        \draw (-2.5,0,0) -- (2.5,0,0);
+        \draw[-stealth] (1,1,0) -- ++(-1,0,0) node[pos=.5,below right] {$\vv{d}$};
+    \end{tikzpicture}
+}%
+\begin{tabu} to .9\linewidth {X[c]X[c]}
+    \fig{-1.5,0,0} &
+    \fig{-1.5,1,0} \\
+    projection & reflection \\
+\end{tabu}

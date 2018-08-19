@@ -1,0 +1,13 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1]
+    \coordinate (O) at (0,0,0);
+    \drawGrid{-2}{0}{-2}{2}
+    \draw[dashed] (O) -- (-2.5,0,0);
+    \pgfmathsetmacro{\h}{1}
+    \pgfmathsetmacro{\th}{2*\h}
+    \fill[lg, opacity=.9] (O) ++(2,2,-\h) -- ++(-4,0,\th) -- ++(0,-4,0) -- ++(4,0,-\th) -- cycle;
+    \drawGrid{0}{2}{-2}{2}
+    \node[point, label=below:{$O$}] at (1,0,0) {};
+    \draw (O) -- (2.5,0,0);
+    \draw[-stealth] (2,1,0) -- ++(-1,0,0) node[pos=.5,below right] {$\vv{d}$};
+    \draw[-stealth] (-1,-1,.5) -- ++(.5,0,1) node[pos=.5, left] {$\vv{n}$};
+\end{tikzpicture}

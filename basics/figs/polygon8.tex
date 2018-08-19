@@ -1,0 +1,25 @@
+\newcommand{\drawArrow}{
+    \draw[decoration={markings, mark=at position 0.5 with {\arrow[scale=1.2]{>}}}, postaction={decorate}]
+}%
+\newcommand{\jump}{
+    \node[point] (P1) at (1.2,-0.7) {};
+    \node[point] (P2) at (1.2,0.7) {};
+    \draw [gray, ->] (P1) to[bend right] (P2);
+}%
+\begin{myc}
+\begin{tikzpicture}
+\drawArrow (0,0) -- (2,0);
+\jump
+\end{tikzpicture}
+
+$+1$
+\end{myc}
+\qquad
+\begin{myc}
+\begin{tikzpicture}
+\drawArrow (2,0) -- (0,0);
+\jump
+\end{tikzpicture}
+
+$-1$
+\end{myc}

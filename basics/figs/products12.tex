@@ -1,0 +1,11 @@
+\begin{tikzpicture}[scale=0.7]
+\coordinate (orig) at (0,0);
+\coordinate (left) at (-2.5,-1.25);
+\coordinate (right) at (2.5,1.25);
+\pic[fill=blue!25, angle radius=1.5cm] {angle=left--orig--right};
+\node[hollow, blue, fill=white] (O) at (orig) {};
+\draw[blue] (O) -- (left);
+\draw[blue, dashed] (O) -- (right);
+\node[point] [label=above:{$\vv{v}$}] (v) at (1.5,0.75) {};
+%\draw[->] (O) -- (v);
+\end{tikzpicture}

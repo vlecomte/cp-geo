@@ -1,0 +1,29 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1.6]
+    \coordinate (O) at (0,0,0);
+    \drawSphere{1}{22.5}{22.5}{.5}
+    \coordinate (P) at (0.707,0.707,0.000); % 0,45
+    \coordinate (Q) at (0.000,0.707,0.707); % 45,90
+    \coordinate (R) at (-0.653,-0.271,-0.707); % 45,22.5
+    \coordinate (S) at (-0.000,-0.924,-0.383); % 22.5,90
+    \coordinate (I) at (0.244,0.797,0.553);
+    \tdplotdefinepoints(0,0,0)(0.707,0.707,0.000)(0.000,0.707,0.707)
+    \tdplotdrawpolytopearc[thick]{1}{}{}
+    \begin{pgfonlayer}{front}
+        \tdplotdrawpolytopebackarc[gray,semithick,dashed]{1}{}{}
+    \end{pgfonlayer}
+    \tdplotdefinepoints(0,0,0)(-0.653,-0.271,-0.707)(-0.000,-0.924,-0.383)
+    \begin{pgfonlayer}{middle}
+        \tdplotdrawpolytopearc[thick]{1}{}{}
+    \end{pgfonlayer}
+    \begin{pgfonlayer}{front}
+        \tdplotdrawpolytopebackarc[gray,semithick,dashed]{1}{}{}
+    \end{pgfonlayer}
+    \node[point,label=below:{$A$}] at (P) {};
+    \node[point,label=right:{$B$}] at (Q) {};
+    \begin{pgfonlayer}{middle}
+        \node[point,label=below:{$C$}] at (R) {};
+        \node[point,label=below:{$D$}] at (S) {};
+        \node[cross] at ($-1*(I)$) {};
+    \end{pgfonlayer}
+    \node[cross] at (I) {};
+\end{tikzpicture}

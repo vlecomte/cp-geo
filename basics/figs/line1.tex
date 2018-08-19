@@ -1,0 +1,11 @@
+\begin{tikzpicture}[scale=0.7]
+\tkzDefPoints{0/0/O, 0/0/P, 2/1/Q, -1/2/ab}
+\tkzDefMidPoint(P,Q) \tkzGetPoint{M}
+\tkzDefPointBy[translation = from O to ab](M) \tkzGetPoint{M'}
+
+\tkzDrawSegment[add=1 and 1](P,Q)
+\tkzDrawVector(M,M')
+\tkzLabelSegment[sloped,below](P,Q){$ax+by = c$}
+\tkzLabelSegment[right,pos=.6](M,M'){$(a,b)$}
+\tkzMarkRightAngle(P,M,M')
+\end{tikzpicture}

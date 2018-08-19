@@ -1,0 +1,24 @@
+\newcommand{\fig}[3]{
+    \begin{tikzpicture}[tdplot_main_coords, scale=1.2]
+        \coordinate (P) at (#1);
+        #2
+        \fill[lg, opacity=.9] (1,1,0) -- (-1,1,0) -- (-1,-1,0) -- (1,-1,0) -- cycle;
+        #3
+        \node[point,label=right:{$P$}] at (P) {};
+        \draw[-stealth] (.5,-.5,0) -- (.5,-.5,1) node[left] {$\vv{n}$};
+    \end{tikzpicture}
+}%
+\begin{tabu} to \linewidth {X[c]X[c]X[c]}
+    \fig{-.2,.2,.9}{}{
+        \draw[dashed] (-.2,.2,0) -- (P);
+        %\node[cross] at (-.2,.2,0) {};
+    } &
+    \fig{-.2,.2,0}{}{} &
+    \fig{-.5,.7,-.6}{
+        \draw[dashed] (-.5,.7,0) -- (P);
+    }{
+        %\node[cross] at (-.5,.7,0) {};
+    } \\
+    $P$ above & $P$ on plane & $P$ below \\
+    $\side_{\Pi}(P) = 3$ & $\side_{\Pi}(P) = 0$ & $\side_{\Pi}(P) = -2$ \\
+\end{tabu}

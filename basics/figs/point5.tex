@@ -1,0 +1,16 @@
+\input{tikz/point-setup}
+\vc{
+    \begin{tikzpicture}[scale=0.8]
+        \axes
+        \tkzDefPoint(2,1){V}
+        \tkzDefPointBy[translation = from O to V](V) \tkzGetPoint{2V}
+        
+        \tkzDrawVector(O,V)
+        \tkzDrawVector[gray, dashed](V,2V)
+        %\tkzDrawPoints(V,2V)
+        
+        \tkzLabelSegment[above](O,V){$\vv{v}$}
+        \tkzLabelSegment[gray, above](V,2V){$\vv{v}$}
+        \draw[decorate, decoration={brace,mirror,amplitude=0.25cm,raise=0.1cm}] (O) -- (2V) node[midway, below, sloped, yshift=-0.25cm] {$2\vv{v}$};
+    \end{tikzpicture}
+}{multiplication by scalar}

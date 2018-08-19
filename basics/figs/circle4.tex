@@ -1,0 +1,21 @@
+\newcommand{\fig}[3]{
+    \begin{tikzpicture}[scale=0.5]
+    \tkzDefPoints{0/0/C1, #1/0/C2}
+    \tkzDrawCircle[R](C1,1cm)
+    \tkzDrawCircle[R](C2,#2cm)
+    \ifnum#3=1
+        \tkzInterCC[R](C1,1cm)(C2,#2cm) \tkzGetPoints{I}{J}
+        \tkzDrawPoints(I,J)
+    \fi
+    \end{tikzpicture}
+}%
+\tabulinesep=3mm%
+\begin{tabu}{cc}
+\vc{\fig{1.8}{0.6}{0} \ \fig{0.2}{0.6}{0}}{0 intersections}
+&
+\vc{\fig{1.6}{0.6}{1} \ \fig{0.4}{0.6}{1}}{1 intersection}
+\\
+\vc{\fig{1}{0.6}{1}}{2 intersections}
+&
+\vc{\fig{0}{1}{0}}{$\infty$ intersections}
+\end{tabu}

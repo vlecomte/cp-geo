@@ -1,0 +1,160 @@
+\section{Circles}
+
+\subsection{Defining a circle}
+Circle $(O,r)$ is the set of points at distance exactly $r$ from a point $O=(x_0,y_0)$.
+
+We can also define it by equation
+\[(x-x_0)^2 + (y-y_0)^2 = r^2\]
+or parametrically as the set of all points
+\[(x_0+r\cos\theta, y_0+r\sin\theta)\]
+with $\theta$ in $[0,2\pi)$, for example.
+
+\centerFig{circle0}
+
+\subsection{Circumcircle}
+The \term{circumcircle} of a triangle $ABC$ is the circle that passes through all three points $A$, $B$ and $C$.
+
+\centerFig{circle1}
+
+It is undefined if $A$, $B$, $C$ are aligned, and unique otherwise. We can compute its center $O$ this way:
+\begin{lstlisting}
+pt circumCenter(pt a, pt b, pt c) {
+    b = b-a, c = c-a; // consider coordinates relative to A
+    assert(cross(b,c) != 0); // no circumcircle if A,B,C aligned
+    return a + perp(b*sq(c) - c*sq(b))/cross(b,c)/2;
+}
+\end{lstlisting}
+
+The radius can then be found by taking the distance to any of the three points, or directly taking the length of \lstinline|perp(b*sq(c) - c*sq(b))/cross(b,c)/2|, which represents vector $\vv{AO}$.
+
+\begin{mathy}
+The formula can be easily interpreted as the intersection point of the line segment bisectors of segments $[AB]$ and $[AC]$, when considering coordinates relative to $A$. Consider the bisector of $[AB]$. It is perpendicular to $[AB]$, so its direction vector is $\perpop(\vv{AB})$, and it passes through the middle point $\frac{1}{2}\vv{AB}$, so its constant term (variable \lstinline|c| in the \lstinline|line| structure) is $\perpop(\vv{AB}) \times \frac{1}{2}\vv{AB} = -\frac{1}{2}|AB|^2$. Similarly, the bisector of $[AC]$ is defined by direction vector $\perpop(\vv{AC})$ and constant term $-\frac{1}{2}|AC|^2$. We then just plug those into the formula for line intersection found in section~\ref{line-line}:
+\begin{align*}
+\vv{AO} &= \frac{(-\frac{1}{2}|AB|^2)\perpop(\vv{AC}) - (-\frac{1}{2}|AC|^2)\perpop(\vv{AB})}{\perpop(\vv{AB}) \times \perpop(\vv{AC})} \\
+&= \frac{\perpop(|AC|^2\vv{AB} - |AB|^2\vv{AC})}{2\ \crossv{AB}{AC}}
+\end{align*}
+\end{mathy}
+
+\subsection{Circle-line intersection}
+A circle $(O,r)$ and a line $l$ have either 0, 1, or 2 intersection points.
+
+\centerFig{circle2}
+
+Let's assume there are two intersection points $I$ and $J$. We first find the midpoint of $[IJ]$. This happens to be the projection of $O$ onto the line $l$, which we will call $P$.
+
+\centerFig{circle3}
+
+Once we have found $P$, to find $I$ and $J$ we need to move along the line by a certain distance $h$. By the Pythagorean theorem, $h=\sqrt{r^2-d^2}$ where $d$ is the distance from $O$ to $l$.
+
+This gives the following implementation (note that we have to divide by $\norm{\dirof{l}}$ so that we move by the correct distance). It returns the number of intersections, and places them in \lstinline|out|. If there is only one intersection, \lstinline|out.first| and \lstinline|out.second| are equal.
+\begin{lstlisting}
+int circleLine(pt o, double r, line l, pair<pt,pt> &out) {
+    double h2 = r*r - l.sqDist(o);
+    if (h2 >= 0) { // the line touches the circle
+        pt p = l.proj(o); // point P
+        pt h = l.v*sqrt(h2)/abs(l.v); // vector parallel to l, of length h
+        out = {p-h, p+h};
+    }
+    return 1 + sgn(h2);
+}
+\end{lstlisting}
+
+\subsection{Circle-circle intersection}
+Similarly to the previous section, two circles $(O_1,r_1)$ and $(O_2,r_2)$ can have either 0, 1, 2 or an infinity of intersection points (in case the circles are identical).
+
+\centerFig{circle4}
+
+As before, we assume there are two intersection points $I$ and $J$ and we try to find the midpoint of $[IJ]$, which we call $P$.
+
+\centerFig{circle5}
+
+Let $d=|O_1O_2|$. We know from the law of cosines on $O_1O_2J$ that
+\[\cos(\measuredangle{O_2O_1J}) = \frac{d^2 + r_1^2 - r_2^2}{2dr_1}\]
+and since $O_1PJ$ is a right triangle,
+\[|O_1P| = r_1\cos(\measuredangle{O_2O_1J}) = \frac{d^2 + r_1^2 - r_2^2}{2d}\]
+which allows us to find $P$.
+
+Now to find $h=|PI|=|PJ|$, we apply the Pythagorean theorem on triangle $O_1PJ$, which gives $h=\sqrt{r_1^2 - |O_1P|^2}$.
+
+This gives the following implementation, which works in a very similar way to the code in the previous section. It aborts if the circles are identical.
+\begin{lstlisting}
+int circleCircle(pt o1, double r1, pt o2, double r2, pair<pt,pt> &out) {
+    pt d=o2-o1; double d2=sq(d);
+    if (d2 == 0) {assert(r1 != r2); return 0;} // concentric circles
+    double pd = (d2 + r1*r1 - r2*r2)/2; // = |O_1P| * d
+    double h2 = r1*r1 - pd*pd/d2; // = h^2
+    if (h2 >= 0) {
+        pt p = o1 + d*pd/d2, h = perp(d)*sqrt(h2/d2);
+        out = {p-h, p+h};
+    }
+    return 1 + sgn(h2);
+}
+\end{lstlisting}
+
+\begin{mathy}
+Let's check that if $d \neq 0$ and variable \lstinline|h2| in the code is nonnegative, there are indeed 1 or 2 intersections (the opposite is clearly true: if \lstinline|h2| is negative, the length $h$ cannot exist). The value of \lstinline|h2| is
+\begin{align*}
+r_1^2 &- \frac{(d^2 + r_1^2 - r_2^2)^2}{4d^2}\\
+&= \frac{4d^2r_1^2 - (d^2 + r_1^2 - r_2^2)^2}{4d^2}\\
+&= \frac{-d^4-r_1^4-r_2^4+2d^2r_1^2+2d^2r_2^2+2r_1^2r_2^2}{4d^2}\\
+&= \frac{(d+r_1+r_2)(d+r_1-r_2)(d+r_2-r_1)(r_1+r_2-d)}{4d^2}
+\end{align*}
+Let's assume this is nonnegative. Thus an even number of those conditions are false:
+\[d+r_1 \geq r_2 \qquad d+r_2 \geq r_1 \qquad r_1+r_2 \geq d\]
+Since $d,r_1,r_2 \geq 0$, no two of those can be simultaneously false, so they must all be true. As a consequence, the triangle inequalities are verified for $d,r_1,r_2$, showing the existence of a point at distance $r_1$ from $O_1$ and distance $r_2$ from $O_2$.
+\end{mathy}
+
+\subsection{Tangent lines}
+We say that a line is tangent to a circle if the intersection between them is a single point. In this case, the ray going from the center to the intersection point is perpendicular to the line.
+
+\centerFig{circle6}
+
+Here we will try and find a line which is tangent to two circles $(O_1,r_1)$ and $(O_2,r_2)$. There are two types of such tangents: outer tangents, for which both circles are on the same side of the line, and inner tangents, for which the circles are on either side.
+
+
+
+\centerFig{circle7}
+
+We will study the case of outer tangents. Our first goal is to find a unit vector parallel to the rays $[O_1P_1]$ and $[O_2P_2]$, in other words, we want to find $\vv{v} = \vv{O_1P_1}/r_1$. To do this we will try to find angle $\alpha$ marked on the figure.
+
+\centerFig{circle8}
+
+If we project $O_2$ onto the ray from $O_1$, this forms a right triangle with hypothenuse $d=|O_1O_2|$ and adjacent side $r_1-r_2$, which means $\cos\alpha = \frac{r_1-r_2}{d}$. By the Pythagorean theorem, the third side is $h = \sqrt{d^2-(r_1-r_2)^2}$, and we can compute $\sin\alpha = \frac{h}{d}$.
+
+From this we find $\vv{v}$ in terms of $\vv{O_1O_2}$ and $\perpop{\left(\vv{O_1O_2}\right)}$ as
+\begin{align*}
+\vv{v} &= \cos\alpha \left(\vv{O_1O_2}\,/d\right) \pm \sin\alpha \left(\perpop{\left(\vv{O_1O_2}\right)}/d\right)\\
+&= \frac{(r_1-r_2)\,\vv{O_1O_2} \pm h \perpop{\left(\vv{O_1O_2}\right)}}{d^2}
+\end{align*}
+where the $\pm$ depends on which of the two outer tangents we want to find.
+
+We can then compute $P_1$ and $P_2$ as 
+\[P_1 = O_1 + r_1\vv{v} \quad \mbox{and} \quad P_2 = O_2 + r_2\vv{v}\]
+
+\exo{
+    Study the case of the inner tangents and show that it corresponds exactly to the case of the outer tangents if $r_2$ is replaced by $-r_2$. This will allow us to write a function that handles both cases at once with an additional argument \lstinline|bool inner| and this line:
+    \lstinputlisting{code/bits/tangent-inner.cpp}
+}
+
+This gives the following code. It returns the number of tangents of the specified type. Besides,
+\begin{itemize}
+\item if there are 2 tangents, it fills \lstinline|out| with two pairs of points: the pairs of tangency points on each circle $(P_1,P_2)$, for each of the tangents;
+\item if there is 1 tangent, the circles are tangent to each other at some point $P$, \lstinline|out| just contains $P$ 4 times, and the tangent line can be found as \lstinline|line(o1,p).perpThrough(p)| (see \ref{perpThrough});
+\item if there are 0 tangents, it does nothing;
+\item if the circles are identical, it aborts.
+\end{itemize}
+\begin{lstlisting}
+int tangents(pt o1, double r1, pt o2, double r2, bool inner, vector<pair<pt,pt>> &out) {
+    if (inner) r2 = -r2;
+    pt d = o2-o1;
+    double dr = r1-r2, d2 = sq(d), h2 = d2-dr*dr;
+    if (d2 == 0 || h2 < 0) {assert(h2 != 0); return 0;}
+    for (double sign : {-1,1}) {
+        pt v = (d*dr + perp(d)*sqrt(h2)*sign)/d2;
+        out.push_back({o1 + v*r1, o2 + v*r2});
+    }
+    return 1 + (h2 > 0);
+}
+\end{lstlisting}
+
+Conveniently, the same code can be used to find the tangent to a circle passing through a point by setting \lstinline|r2| to 0 (in which case the value of \lstinline|inner| doesn't matter).

@@ -1,0 +1,13 @@
+\input{tikz/circle-setup}
+\newcommand{\fig}[3]{
+    \begin{tikzpicture}[scale=0.5]
+    \tangents{#1}{#2}{#3}
+    \tkzDrawCircle(C1,I1)
+    \tkzDrawCircle(C2,I2)
+    \tkzDrawPoints(I1,I2,J1,J2)
+    \tkzDrawSegments[add=0.5 and 0.5](I1,I2 J1,J2)
+    \end{tikzpicture}
+}%
+\vc{\fig{3.5}{1.5}{1}}{outer tangents}
+\quad
+\vc{\fig{3.5}{1.5}{-1}}{inner tangents}

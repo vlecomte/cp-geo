@@ -1,0 +1,8 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1.2]
+    \coordinate (O) at (0,0,0);
+    \pgfmathsetmacro{\h}{.5}
+    \pgfmathsetmacro{\th}{2*\h}
+    \fill[lg, opacity=.8] (O) ++(1,1,\h) -- ++(-2,0,0) node[right,black] {$a_1x+b_1y+c_1z = d_1$} -- ++(0,-2,-\th) -- ++(2,0,0) -- cycle;
+    \fill[lg, opacity=.8] (O) ++(1,1,-\h) -- ++(-2,0,0) node[right,black] {$a_2x+b_2y+c_2z = d_2$} -- ++(0,-2,\th) -- ++(2,0,0) -- cycle;
+    \draw (-1.5,0,0) -- (1.5,0,0);
+\end{tikzpicture}

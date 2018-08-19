@@ -1,0 +1,143 @@
+\section{Planes}
+In this section we will discuss how to represent planes, and many ways we can use them. We will see that they play a very similar role to the role lines play in 2D, and many of the operations we defined in section~\ref{s:lines} have a direct equivalent here. Since the explanations are nearly identical, we make them a bit shorter here; please refer to section~\ref{s:lines} if you want more details.
+
+\subsection{Defining planes}
+Planes are sets of points $(x,y,z)$ which obey an equation of the form $ax+by+cz=d$. Here, $a,b,c$ determine the orientation of the plane, while $d$ determines its position relative to the origin.
+
+\centerFig{plane0}
+
+Vector $\vv{n}=(a,b,c)$ is perpendicular to the plane and is called a \emph{normal} of the plane. The equation can be rewritten as $\vv{n}\cdot(x,y,z) = d$: that is, the plane is formed by all points whose dot product with $\vv{n}$ is equal to constant $d$. This makes sense, because we know that the dot product doesn't change when one vector (here, the point $(x,y,z)$) moves perpendicularly to the other (here, the normal $\vv{n}$).
+
+\centerFig{plane1}
+
+Here are some other ways to define a plane, and how to find $\vv{n}$ and $d$ in each case:
+\begin{itemize}
+\item if we know the normal $\vv{n}$ and a point $P$ belonging to the plane: we can find $d$ as $\vv{n}\cdot P$;
+\item if we know a point $P$ and two (non-parallel) vectors $\vv{v}$ and $\vv{w}$ that are parallel to the plane: we can define $\vv{n}=\crossv{v}{w}$ then find $d$ as above;
+\item if we know 3 non-collinear points $P,Q,R$ on the plane: we first find two vectors $\vv{v}=\vv{PQ}$ and $\vv{w} = \vv{PR}$ that are parallel from the plane, then find $\vv{n}$ and $d$ as above.
+\end{itemize}
+
+We implement this with the following structure and constructors:
+\begin{lstlisting}
+struct plane {
+    p3 n; T d;
+    // From normal n and offset d
+    plane(p3 n, T d) : n(n), d(d) {}
+    // From normal n and point P
+    plane(p3 n, p3 p) : n(n), d(n|p) {}
+    // From three non-collinear points P,Q,R
+    plane(p3 p, p3 q, p3 r) : plane((q-p)*(r-p), p) {}
+    
+    // Will be defined later:
+    // - these work with T = int
+    T side(p3 p);
+    double dist(p3 p);
+    plane translate(p3 t);
+    // - these require T = double
+    plane shiftUp(double dist);
+    p3 proj(p3 p);
+    p3 refl(p3 p);
+};
+\end{lstlisting}
+
+\subsection{Side and distance}
+The first thing we are interested for a plane $\Pi$ in is the value of $ax+by+cz-d$. If it's zero, the point is on $\Pi$, and otherwise it tells us which side of $\Pi$ the point lies. We name it \lstinline|side()|, like its 2D line equivalent:
+\begin{lstlisting}
+T side(p3 p) {return (n|p)-d;}
+\end{lstlisting}
+which we will denote $\side_{\Pi}(P)$.
+
+$\side_{\Pi}(P)$ is positive if $P$ is on the side of $\Pi$ pointed by $\vv{n}$, and negative for the other side. In fact, for given points $P,Q,R,S$, \lstinline|plane(p,q,r).side(s)| gives the same value as \lstinline|orient(p,q,r,s)|.
+
+\centerFig{plane2}
+
+And just like the \lstinline|side()| for 2D lines, we can get the distance from it, if we compensate for the norm of $\vv{n}$:
+\begin{lstlisting}
+double dist(p3 p) {return abs(side(p))/abs(n);}
+\end{lstlisting}
+
+\subsection{Translating a plane}
+If we translate a plane by a vector $\vv{t}$, the normal $\vv{n}$ remains unchanged, but the offset $d$ changes.
+
+\centerFig{plane3}
+
+To find the new value $d'$, we use the same argument as for 2D lines: suppose point $P$ is on the old plane, that is, $\vv{n}\cdot P = d$. Then $P+\vv{t}$ should be in the new plane:
+\[d' = \vv{n}\cdot(P+\vv{t}) = \vv{n}\cdot P + \dotv{n}{t} = d + \dotv{n}{t}\]
+
+\begin{lstlisting}
+plane translate(p3 t) {return {n, d+(n|t)};}
+\end{lstlisting}
+
+And if we want to shift perpendicularly (in the direction of $\vv{n}$) by some distance $\delta$, then $\dotv{n}{t}$ becomes $\delta\normv{n}$, which gives the following code:
+\begin{lstlisting}
+plane shiftUp(double dist) {return {n, d + dist*abs(n)};}
+\end{lstlisting}
+
+\subsection{Orthogonal projection and reflection}
+The orthogonal projection of a point $P$ on a plane $\Pi$ is the point on $\Pi$ that is closest to $P$. The reflection of point $P$ by plane $\Pi$ is the point on the other side of $\Pi$ that is at the same distance and has the same orthogonal projection.
+
+\centerFig{plane4}
+
+We use a similar reasoning as in section~\ref{ss:proj-refl}. Clearly, to go from $P$ to its projection on $\Pi$, we need to move perpendicularly to $\Pi$, that is, we need to move by $k\vv{n}$ for some $k$, so that the resulting point $P+k\vv{n}$ is on $\Pi$.
+
+From this we find $k$:
+\begin{align*}
+\vv{n}\cdot(P+k\vv{n}) = d
+&\Leftrightarrow \vv{n}\cdot P + k(\dotv{n}{n}) = d \\
+&\Leftrightarrow k\normv{n}^2 = -(\vv{n}\cdot P - d) \\
+&\Leftrightarrow k = -\frac{\side_{\Pi}(P)}{\normv{n}^2}
+\end{align*}
+
+And to find the reflection, we need to move $P$ twice as far to $P+2k\vv{n}$, so we get the following implementation for both:
+\begin{lstlisting}
+p3 proj(p3 p) {return p - n*side(p)/sq(n);}
+p3 refl(p3 p) {return p - n*2*side(p)/sq(n);}
+\end{lstlisting}
+
+\subsection{Coordinate system based on a plane}
+When we have a plane $\Pi$, sometimes we will want to know what are the coordinates of a point in $\Pi$. That is, suppose we have a few points that we know are coplanar, and we want to use some 2D algorithm on them. How do we get the 2D coordinates of those points?
+
+To do this, we need to chose an origin point $O$ on $\Pi$ and two vectors $\vv{d_x}$ and $\vv{d_y}$ indicating the desired $x$ and $y$ directions. Let's first assume $\vv{d_x}$ and $\vv{d_y}$ are perpendicular and their norms are 1. Then, to find the $x$- and $y$-coordinate of a point $P$ on $\Pi$, we simply need to compute
+\begin{align*}
+x &= \dotv{OP}{d_x} \\
+y &= \dotv{OP}{d_y}
+\end{align*}
+and if we also have vector $\vv{d_z} = \crossv{d_x}{d_y}$ perpendicular to the first two, we can find the ``height'' of $P$ respective to $\Pi$:
+\[z = \dotv{OP}{d_z}\]
+
+\centerFig{plane5}
+
+If we have three non-collinear points $P,Q,R$ that form plane $\Pi$, how can we choose $O$, $\vv{d_x}$, $\vv{d_y}$ and $\vv{d_z}$?
+\begin{enumerate}
+\item First, we choose the origin $O$ to be $P$.
+\item Then, we choose $\vv{d_x}$ to be $\vv{PQ}$, and scale it to have a norm of 1.
+\item Next, we compute $\vv{d_z} = \vv{d_x}\times\vv{PR}$, and scale it to have a norm of 1. It is perpendicular to $\Pi$ because it is perpendicular to two non-parallel vectors in it.
+\item Finally, we find $\vv{d_y}$ as $\crossv{d_z}{d_x}$.
+\end{enumerate} 
+
+This gives the following code. Method \lstinline|pos2d()| gives the position on the plane as a 2D point, and method \lstinline|pos3d()| gives the position and height as a 3D point (so in a way this structure represents a change of coordinate system).
+\begin{lstlisting}
+struct coords {
+    p3 o, dx, dy, dz;
+    // From three points P,Q,R on the plane:
+    // build an orthonormal 3D basis
+    coords(p3 p, p3 q, p3 r) : o(p) {
+        dx = unit(q-p);
+        dz = unit(dx*(r-p));
+        dy = dz*dx;
+    }
+    // From four points P,Q,R,S:
+    // take directions PQ, PR, PS as is
+    coords(p3 p, p3 q, p3 r, p3 s) :
+        o(p), dx(q-p), dy(r-p), dz(s-p) {}
+    
+    pt pos2d(p3 p) {return {(p-o)|dx, (p-o)|dy};}
+    p3 pos3d(p3 p) {return {(p-o)|dx, (p-o)|dy, (p-o)|dz};}
+};
+\end{lstlisting}
+
+\begin{mathy}
+The second constructor allows us specify points $P,Q,R,S$ and choose $\vv{d_x}=\vv{PQ}$, $\vv{d_y}=\vv{PR}$ and $\vv{d_z}=\vv{PS}$ directly. This can be useful if we don't care that the 2D coordinate system $(\vv{d_x},\vv{d_y})$ is not orthonormal (perpendicular and of norm 1), because it allows us to keep using integer coordinates.
+
+If $\vv{d_x}$ and $\vv{d_y}$ are not perpendicular or do not have a norm of 1, the computed distances and angles will not be correct. But if we are only interested in the relative positions of lines and points, and finding the intersections of lines or segments, then everything works fine. Computing the 2D convex hull of a set of points is an example of such a problem, because it only requires that the sign of $\orient()$ is correct.
+\end{mathy}

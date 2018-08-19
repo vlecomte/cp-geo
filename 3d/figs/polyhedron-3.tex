@@ -1,0 +1,73 @@
+\newcommand{\tri}[4]{%
+    \fill[#4, opacity=.9] (#1) -- (#2) -- (#3) -- cycle;
+}%
+\newcommand{\fig}[2]{%
+    \begin{tikzpicture}[tdplot_main_coords, scale=#1]
+        #2
+    \end{tikzpicture}
+}%
+\newcommand{\figA}[2]{%
+    \fig{#1}{
+        \coordinate (A) at (1,0,0);
+        \coordinate (B) at (1,1,0);
+        \coordinate (C) at (0,1,0);
+        \coordinate (D) at (0,0,0);
+        #2
+    }
+}%
+\newcommand{\figB}[2]{%
+    \fig{#1}{
+        \coordinate (A) at (1,0,0);
+        \coordinate (B) at (.5,.5,0);
+        \coordinate (C) at (1,1,0);
+        \coordinate (D) at (0,.5,0);
+        #2
+    }
+}%
+\newcommand{\triA}[1]{
+    \tri{A}{B}{C}{#1}
+    \draw[thin,gray,dotted] (A) -- (B) -- (C) -- (D) -- cycle;
+    \draw[-stealth] (A) -- (B);
+    \draw[-stealth] (A) -- (C);
+}%
+\newcommand{\triB}[1]{
+    \tri{A}{C}{D}{#1}
+    \draw[thin,gray,dotted] (A) -- (B) -- (C) -- (D) -- cycle;
+    \draw[-stealth] (A) -- (C);
+    \draw[-stealth] (A) -- (D);
+}%
+\begin{tabu} to .9\linewidth {X[c]X[c]|X[c]X[c]}
+    \multicolumn{2}{c|}{\emph{Same orientation}} & \multicolumn{2}{c}{\emph{Different orientation}} \\
+    \midrule
+    \multicolumn{2}{c|}{
+        \figA{2}{
+            \fill[lg, opacity=.9] (A) -- (B) -- (C) -- (D);
+            \draw[gray,semithick,dashed] (A) -- (C);
+            \draw  (A) node[left] {$A$} -- (B) node[below] {$B$} -- (C) node[right] {$C$} -- (D) node[above] {$D$} -- cycle;
+        }
+    } &
+    \multicolumn{2}{c}{
+        \figB{2}{
+            \fill[lg, opacity=.9] (A) -- (B) -- (C) -- (D);
+            \draw[gray,semithick,dashed] (A) -- (C);
+            \draw  (A) node[left] {$A$} -- (B) node[below,xshift=-.15cm,yshift=.05cm] {$B$} -- (C) node[below] {$C$} -- (D) node[above] {$D$} -- cycle;
+        }
+    } \\
+    \figA{1.5}{
+        \triA{posBack}
+        \draw[-stealth] (.667,.667,0) -- ++(0,0,.7);
+    } &
+    \figA{1.5}{
+        \triB{posBack}
+        \draw[-stealth] (.333,.333,0) -- ++(0,0,.7);
+    } &
+    \figB{1.5}{
+        \draw[-stealth] (.833,.5,0) -- ++(0,0,-.35);
+        \triA{negBack}
+    } &
+    \figB{1.5}{
+        \triB{posBack}
+        \draw[-stealth] (.666,.5,0) -- ++(0,0,.7);
+    } \\
+    $\crossv{AB}{AC}$ & $\crossv{AC}{AD}$ & $\crossv{AB}{AC}$ & $\crossv{AC}{AD}$ \\
+\end{tabu}

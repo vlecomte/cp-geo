@@ -1,0 +1,11 @@
+\begin{tikzpicture}[scale=0.6]
+\tkzDefPoints{-2/0/A, 2/1.5/B}
+
+\tkzDrawCircle[diameter, fill=accentBack, draw=none](A,B)
+\tkzDrawSegment[add=.5 and .5](A,B)
+\tkzDrawSegment[accent](A,B)
+\tkzDrawPoints[color=accent](A,B)
+
+\tkzLabelPoints[above left = 0 and .1](A)
+\tkzLabelPoints[below right = 0 and .1](B)
+\end{tikzpicture}

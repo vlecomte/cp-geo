@@ -1,0 +1,18 @@
+\begin{tikzpicture}[scale=0.7]
+\tkzDefPoints{0/0/O, 0/0/A, 2/1/B, 2/1/v, -1/2/pv, -1.5/.5/V, 3.5/-2/P, 2.5/-2.5/PV}
+\tkzDefPointsBy[translation = from O to v](V){}
+\tkzDefPointsBy[translation = from O to pv](P,PV){}
+\tkzInterLL(A,B)(P,P') \tkzGetPoint{I}
+
+\tkzDrawSegment[add=1 and 1, ->](A,B)
+\tkzDrawSegment[add=0.5 and 1.5, ->](P,P')
+\tkzDrawVectors(V,V' PV,PV')
+\tkzDrawPoints(P,P')
+\tkzMarkRightAngle(A,I,P)
+
+\tkzLabelSegment[pos=.4,below](A,B){$l$}
+\tkzLabelSegment[pos=.4](V,V'){$\vv{v}$}
+\tkzLabelSegment[pos=.4, left](PV,PV'){$\perpop(\vv{v})$}
+\tkzLabelPoint[right](P){$P$}
+\tkzLabelPoint[right](P'){$P+\perpop(\vv{v})$}
+\end{tikzpicture}

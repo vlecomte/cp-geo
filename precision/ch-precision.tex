@@ -1,0 +1,15 @@
+\chapter{Precision issues and epsilons}
+
+Computational geometry very often means working with floating-point values. Even when the input points are all integers, as soon as intermediate steps require things like line intersections, orthogonal projections or circle tangents, we have no choice but to use floating-point numbers to represent coordinates.
+
+Using floating-point numbers comes at a cost: loss of precision. The number of distinct values that can be represented by a data type is limited by its number of bits, and therefore many ``simple'' values like $0.1$ or $\sqrt{2}$ cannot be exactly represented. Worse, even if $a$ and $b$ are exact, there is no guarantee that simple operations like $a+b$, $a-b$ or $ab$ will give an exact result.
+
+Though many people are well aware that those issues exist, they will most often argue that they only cause small imprecisions in the answer in the end, and do not have any major consequence or the behavior of algorithms. In the rest of this chapter, we will show how both those assumptions can sometimes be false, then present some ways in which we \emph{can} make accurate statements about how precision loss affects algorithms, go on with a few practical examples, and finally give some general advice to problem solvers and setters.
+
+\input{precision/small-big}
+\input{precision/small-break}
+\input{precision/modelling}
+%\subsection{Notations}
+%\todo{}
+\input{precision/cases}
+\input{precision/advice}

@@ -1,0 +1,12 @@
+\begin{tikzpicture}[scale=0.8]
+\tkzDefPoints{0/0/O, 1/0/A, 2/1/P, -1/2/Q, -4/3/PQ}
+
+\tkzMarkAngles[size=1cm, mark=|](A,O,P Q,O,PQ)
+\draw[->, gray] (-4,0) -- (4,0);
+\draw[->, gray] (0,-1) -- (0,4);
+\tkzDrawVectors(O,P O,Q O,PQ)
+
+\tkzLabelSegment[above](O,P){$\vv{v}$}
+\tkzLabelSegment[right, pos=0.6](O,Q){$\vv{w}$}
+\tkzLabelSegment[below, sloped](O,PQ){$\vv{v}\ast\vv{w}$}
+\end{tikzpicture}

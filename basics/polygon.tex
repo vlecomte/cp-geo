@@ -1,0 +1,229 @@
+\section{Polygons}
+In this section we will discuss basic tasks on polygons: how to find their area and two ways to detect if a point is inside or outside them.
+
+\subsection{Polygon area}\label{ss:polygon-area}
+To compute the area of a polygon, it is useful to first consider the area of a triangle $ABC$.
+
+\centerFig{polygon0}
+
+We know that the area of this triangle is $\frac{1}{2} |AB| |AC| \sin\theta$, because $|AC| \sin\theta$ is the length of the height coming down from $C$. This looks a lot like the definition of cross product: in fact,
+\[\frac{1}{2} |AB| |AC| \sin\theta = \frac{1}{2} \left|\crossv{AC}{AC}\right|\]
+
+Since $O$ is the origin, it can be implemented simply like this:
+\begin{lstlisting}
+double areaTriangle(pt a, pt b, pt c) {
+    return abs(cross(b-a, c-a)) / 2.0;
+}
+\end{lstlisting}
+
+Now that we can compute the area of a triangle, the intuitive way to find the area of a polygon would be to
+\begin{enumerate}
+\item divide the polygon into triangles;
+\item add up all the areas.
+\end{enumerate}
+
+However, it turns out that reliably dividing a polygon into triangles is a difficult problem in itself. So instead we'll add and subtract triangle areas in a clever way. Let's take this quadrilateral as an example:
+\centerFig{polygon1}
+
+Let's take an arbitrary reference point $O$. Let's consider the vertices of $ABCD$ in order, and for every pair of consecutive points $P_1,P_2$, we'll add the area of $OP_1P_2$ to the total if $\vv{P_1P_2}$ goes counter-clockwise around $O$, and subtract it otherwise. Additions are marked in blue and subtractions in red.
+\centerFig{polygon2}
+
+We can see that this will indeed compute the area of quadrilateral $ABCD$. In fact, it works for any polygon (draw a few more examples to convince yourself).
+
+Note that the sign (add or subtract) that we take for the area of $OP_1P_2$ is exactly the sign that the cross product takes. If we take the origin as reference point $O$, it gives this simple implementation:
+\begin{lstlisting}
+double areaPolygon(vector<pt> p) {
+    double area = 0.0;
+    for (int i = 0, n = p.size(); i < n; i++) {
+        area += cross(p[i], p[(i+1)%n]); // wrap back to 0 if i == n-1
+    }
+    return abs(area) / 2.0;
+}
+\end{lstlisting}
+We have to take the absolute value in case the vertices are given in clockwise order. In fact, testing the sign of \lstinline|area| is a good way to know whether the vertices are in counter-clockwise (positive) or clockwise (negative) order. It is good practice to always put your polygons in counter-clockwise order, by reversing the array of vertices if necessary, because some algorithms on polygons use this property.
+
+\subsection{Cutting-ray test}
+Let's say we want to test if a point $A$ is inside a polygon $P_1 \cdots P_n$. Then one way to do it is to draw an imaginary ray from $A$ that extends to infinity, and check how many times this ray intersects $P_1 \cdots P_n$. If the number of intersections is odd, $A$ is inside, and if it is even, $A$ is outside.
+
+\centerFig{polygon3}
+%For example, in the figure above, the ray from $A_1$ has 3 intersections with the polygon so $A_1$ is inside, while the ray from $A_2$ has 2 intersections with the polygon so $A_2$ is outside.
+
+However, sometimes this can go wrong if the ray touches a vertex of the polygon, as below. The ray from $A_3$ intersects the polygon twice, but $A_3$ is inside. We can try to solve the issue by counting one intersection per segment touched, which would give three intersections for $A_3$, but then the ray from $A_4$ will intersect the polygon twice even though $A_4$ is inside.
+
+\centerFig{polygon4}
+
+So we need to be more careful in defining what counts as an intersection. We will split the plane into two halves along the ray: the points lower than $A$, and the points at least as high (blue region). We then say that a segment $[P_iP_{i+1}]$ crosses the ray right of $A$ if it touches it \emph{and} $P_i$ and $P_{i+1}$ are on opposite halves.
+
+\centerFig{polygon5}
+
+Below we show for some segments whether they are considered to cross the ray or not. We can see in the last two examples that the behavior is different if the segment touches the ray from below or from above.
+
+\begin{center}
+\includeFig{polygon6}
+\includeFig{polygon11}
+\end{center}
+
+\exo{Verify that, with this new definition of crossing, $A_3$ and $A_4$ are correctly detected to be inside the polygon.}
+
+Checking the halves to which the points belong is easy, but checking that the segment touches the ray is a bit more tricky. We could check whether the segments $[P_i,P_{i+1}]$ and $[AB]$ intersect for $B$ very far on the ray, but it actually we can do it more simply using $\orient$: if $P_i$ is below and $P_{i+1}$ above, then $\orient(A,P_i,P_{i+1})$ should be positive, and otherwise it should be negative.
+We can then implement this with the code below:
+\begin{lstlisting}
+// true if P at least as high as A (blue part)
+bool above(pt a, pt p) {
+    return p.y >= a.y;
+}
+// check if [PQ] crosses ray from A
+bool crossesRay(pt a, pt p, pt q) {
+    return (above(a,q) - above(a,p)) * orient(a,p,q) > 0;
+}
+\end{lstlisting}
+
+If we now return to the original problem, we still have to check whether $A$ is on the boundary of the polygon. We can do that by using \lstinline|onSegment()| defined in \ref{onsegment}.
+\begin{lstlisting}
+// if strict, returns false when A is on the boundary
+bool inPolygon(vector<pt> p, pt a, bool strict = true) {
+    int numCrossings = 0;
+    for (int i = 0, n = p.size(); i < n; i++) {
+        if (onSegment(p[i], p[(i+1)%n], a))
+            return !strict;
+        numCrossings += crossesRay(a, p[i], p[(i+1)%n]);
+    }
+    return numCrossings & 1; // inside if odd number of crossings
+}
+\end{lstlisting}
+
+\subsection{Winding number}\label{ss:wind-2d}
+Another way to test if $A$ is inside polygon $P_1 \cdots P_n$ is to think of a string with one end attached at $A$ and the other following the boundary of the polygon, doing one turn. If between the start position and the end position the string has done a full turn, then we are inside the polygon. If however the direction string has simply oscillated around the same position, then we are outside the polygon. Another way to test it is to place one finger on point $A$ while another one follows the boundary of the polygon, and see if the fingers are twisted at the end.
+
+This idea can be generalized to the \emph{winding number}. The winding number of a closed curve around a point is the number of times this curve turns counterclockwise around the point. Here is an example.
+
+\centerFig{polygon7}
+
+Points $A_1$ and $A_2$ are completely out of the curve so the winding number around them is $0$ (no turn). Points $A_3$ and $A_4$ are inside the main loop, which goes counterclockwise, so the winding number around them is $1$. The curve turns twice counterclockwise around $A_5$, so the winding number is $2$. Finally the curve goes clockwise around $A_6$, for a winding number of $-1$.
+
+\begin{mathy}
+In fact, we can move the curve continuously without changing the winding number as long as we don't touch the reference point. Therefore we can ``untie'' loops which don't contain the point. That's why, when looking at $A_3$ or $A_4$, we can completely ignore the loops that contain $A_5$ and $A_6$.
+\end{mathy}
+
+\begin{mathy}
+If we move the reference point while keeping the curve unchanged, the value of the winding number will only change when it crosses the curve. If it crosses the curve from the right (according to its orientation), the winding number increases by 1, and if it crosses it from the left, the winding number decreases by 1.
+
+\centerFig{polygon8}
+\end{mathy}
+
+\exoWithSolution{
+    What value will \lstinline|areaPolygon()| (section~\ref{ss:polygon-area}) give when applied to a closed polyline that crosses itself, like the curve above, instead of a simple polygon? Assume we don't take the absolute value.
+}{
+    It will give the sum of the areas of the parts delimited by the curve, multiplied by their corresponding winding numbers. For the curve below, it will give the sum of:
+    \protect\begin{itemize}
+    \protect\item $1\ \times$ the area of the part containing $A_3$ and $A_4$;
+    \protect\item $2\ \times$ the area of the part containing $A_5$;
+    \protect\item $-1\ \times$ the area of the part containing $A_6$.
+    \protect\end{itemize}
+    
+    \protect\centerFig{polygon7}
+}{area-crossing}
+
+To compute the winding number, we need to keep track of the amplitude travelled, positive if counterclockwise, and negative if clockwise. We can use \lstinline|angle()| from section~\ref{ss:dot} to help us.
+\begin{lstlisting}
+// amplitude travelled around point A, from P to Q
+double angleTravelled(pt a, pt p, pt q) {
+    double ampli = angle(p-a, q-a);
+    if (orient(a,p,q) > 0) return ampli;
+    else return -ampli;
+}
+\end{lstlisting}
+
+Another way to implement it uses the arguments of points:
+\begin{lstlisting}
+double angleTravelled(pt a, pt p, pt q) {
+    // remainder ensures the value is in [-pi,pi]
+    return remainder(arg(q-a) - arg(p-a), 2*M_PI);
+}
+\end{lstlisting}
+
+Then we simply sum it all up and figure out how many turns were made:
+\begin{lstlisting}
+int windingNumber(vector<pt> p, pt a) {
+    double ampli = 0;
+    for (int i = 0, n = p.size(); i < n; i++)
+        ampli += angleTravelled(a, p[i], p[(i+1)%n]);
+    return round(ampli / (2*M_PI));
+}
+\end{lstlisting}
+
+\begin{warning}
+The winding number is not defined if the reference point is on the curve/polyline. If it is the case, this code will give arbitrary results, and potentially \lstinline|(int)NAN|.
+\end{warning}
+
+\subsubsection{Angles of integer points}
+While the code above works, its use of floating-point numbers makes it non ideal, and when coordinates are integers, we can do better. We will define a new way to work with angles, as a type \lstinline|angle|. This type will also be useful for other tasks, such as for sweep angle algorithms.
+
+Instead of working with amplitudes directly, we will represent angles by a point and a certain number of full turns.\footnote{This approach is based on an original idea in \cite{kactl}, see ``Angle.h''.} More precisely, in this case, we will use point $(x,y)$ and number of turns $t$ to represent angle $\atanTwo(y,x) + \turn t$.
+
+We start by defining the new type \lstinline|angle|. We also define a utility function \lstinline|t360()| which turns an angle by a full turn.
+\begin{lstlisting}
+struct angle {
+    pt d; int t = 0; // direction and number of full turns
+    angle t180(); // to be defined later
+    angle t360() {return {d, t+1};}
+};
+\end{lstlisting}
+The range of angles which have the same value for $t$ is $(-\half + \turn t, \half + \turn t]$.
+
+We will now define a comparator between angles. The approach is the same as what we did for the polar sort in section~\ref{polar-sort}, so we will reuse the function \lstinline|half()| which separates the plane into two halves so that angles within one half are easily comparable:
+\begin{lstlisting}
+bool half(pt p) {
+    return p.y > 0 || (p.y == 0 && p.x < 0);
+}
+\end{lstlisting}
+
+It returns \lstinline|true| for the part highlighted in blue and \lstinline|false| otherwise. Thus, in practice, it allows us to separate each range $(-\half + \turn t, \half + \turn t]$ into the subranges $(-\half + \turn t, \turn t]$, for which \lstinline|half()| returns \lstinline|false|, and $(\turn t, \half + \turn t]$, for which \lstinline|half()| returns \lstinline|true|.
+\centerFig{polygon9}
+
+We can now write the comparator between angles, which is nearly identical to the one we used for polar sort, except that we first check the number of full turns \lstinline|t|.
+\begin{lstlisting}
+bool operator<(angle a, angle b) {
+    return make_tuple(a.t, half(a.d), 0) <
+           make_tuple(b.t, half(b.d), cross(a.d,b.d));
+}
+\end{lstlisting}
+
+We also define the function \lstinline|t180()| which turns an angle by half a turn counterclockwise. The resulting angle has an opposite direction. To find the number of full turns $t$, there are two cases:
+\begin{itemize}
+\item if \lstinline|half(d)| is \lstinline|false|, we are in the lower half $(-\half + \turn t, \turn t]$, and we will move to the upper half $(\turn t, \half + \turn t]$, without changing $t$;
+\item if \lstinline|half(d)| is \lstinline|true|, we are in the upper half $(\turn t, \half + \turn t]$, and we will move to $(-\half + \turn (t+1), \turn (t+1)]$, the lower half for $t+1$.
+\end{itemize}
+\begin{lstlisting}
+angle t180() {return {d*(-1), t + half(d)};}
+\end{lstlisting}
+
+We will now implement the function that will allow us to compute the winding number. Consider an angle with direction point $D$. Given a new direction $D'$, we would like to move the angle in such a way that if direction $D'$ is to the left of $D$, the angle increases, and if $D'$ is to the right of $D$, the angle decreases.
+
+\centerFig{polygon10}
+
+In other words, we want the new angle to be an angle with direction $D'$, and such that the difference between it and the old angle is at most $180\degree$. We will use this formulation to implement the function:
+\begin{lstlisting}
+angle moveTo(angle a, pt newD) {
+    // check that segment [DD'] doesn't go through the origin
+    assert(!onSegment(a.d, newD, {0,0}));
+    
+    angle b{newD, a.t};
+    if (a.t180() < b) // if b more than half a turn bigger
+        b.t--;        //     decrease b by a full turn
+    if (b.t180() < a) // if b more than half a turn smaller
+        b.t++;        //     increase b by a full turn
+    return b;
+}
+\end{lstlisting}
+We know that \lstinline|b| as it is first defined is less than a full turn away from \lstinline|a|, so the two conditions are enough to bring it within half a turn of \lstinline|a|.
+
+We can use this to implement a new version of \lstinline|windingNumber()| very simply. We start at some vertex of the polygon, move vertex to vertex while maintaining the angle, then read the number of full turns once we come back to it.
+\begin{lstlisting}
+int windingNumber(vector<pt> p, pt a) {
+    angle a{p.back()}; // start at last vertex
+    for (pt d : p)
+        a = moveTo(a, d); // move to first vertex, second, etc.
+    return a.t;
+}
+\end{lstlisting}

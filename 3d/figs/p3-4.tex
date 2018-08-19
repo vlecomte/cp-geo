@@ -1,0 +1,24 @@
+\newcommand{\fig}[3]{
+    \begin{tikzpicture}[tdplot_main_coords, scale=1.2]
+        \coordinate (P) at (1,0,0);
+        \coordinate (Q) at (0,1.4,0);
+        \coordinate (R) at (-1,0,0);
+        \coordinate (S) at (0,.33,#1);
+        
+        #2
+        \draw[dashed] (S) -- (0,.33,0);
+        \node[point,label=left:{$S$}] at (S) {};
+        #3
+        
+        \node[point,label=left:{$P$}] at (P) {};
+        \node[point,label=right:{$Q$}] at (Q) {};
+        \node[point,label=above right:{$R$}] at (R) {};
+    \end{tikzpicture}
+}%
+\begin{tabu} to \linewidth {X[c]X[c]X[c]}
+\fig{.8}{\fill[fill=lg, opacity=.9] (P) -- (Q) -- (R) -- cycle;}{} &
+\fig{0}{\fill[fill=lg, opacity=.9] (P) -- (Q) -- (R) -- cycle;}{} &
+\fig{-.8}{}{\fill[fill=lg, opacity=.9] (P) -- (Q) -- (R) -- cycle;} \\
+$S$ above $PQR$ & $S$ on $PQR$ & $S$ below $PQR$ \\
+$\orient(P,Q,R,S)>0$ & $\orient(P,Q,R,S) = 0$ & $\orient(P,Q,R,S)<0$ \\
+\end{tabu}

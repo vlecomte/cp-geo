@@ -1,0 +1,31 @@
+\newcommand{\abc}[3]{
+    \tkzInit[xmin=-1,xmax=3.5,ymin=-1.5,ymax=1.8]
+    \tkzClip
+    \tkzDefPoints{#1/A, #2/B, #3/C}
+    \tkzDrawPoints(A,B,C)
+}%
+\newcommand{\circum}{
+    \tkzCircumCenter(A,B,C) \tkzGetPoint{O}
+    \tkzLabelPoints[left](A)
+    \tkzLabelPoints[right](B,C)
+    %\tkzDrawPoint(O)
+}%
+\begin{tabu} to .95\linewidth {X[c]X[c]X[c]}
+\begin{tikzpicture}[scale=0.5]
+\abc{0/0}{2/-1}{2.5/1.5}
+\circum
+\tkzMarkAngle[size=.6, arrows=->](A,O,C)
+\end{tikzpicture}&
+\begin{tikzpicture}[scale=0.5]
+\abc{0/-.25}{1.5/0.5}{2.5/1}
+\tkzDrawSegment[gray, dashed, add=0.3 and 0.3](A,C)
+\tkzLabelPoints[below](A,B,C)
+\end{tikzpicture}&
+\begin{tikzpicture}[scale=0.5]
+\abc{0/0}{1.5/1.5}{2/-1.2}
+\circum
+\tkzMarkAngle[size=.6, arrows=<-](C,O,A)
+\end{tikzpicture}\\
+left turn & collinear & right turn \\
+$\orient(A,B,C) > 0$ & $\orient(A,B,C) = 0$ & $\orient(A,B,C) < 0$ \\
+\end{tabu}

@@ -1,0 +1,171 @@
+\section{Lines}
+In this section we will discuss how to represent lines in 3D, and some related problems, including finding the line at the intersection of two planes, and finding the intersection point of a plane and a line.
+
+\subsection{Line representation}
+Unlike 2D lines and planes, 3D lines don't have a nice representation as a single equation on coordinates like $ax+by=c$ or $ax+by+cz=d$. We could represent them as the intersection of two planes, like
+\begin{align*}
+a_1x+b_1y+c_1z &= d_1 \\
+a_2x+b_2y+c_2z &= d_2
+\end{align*}
+but this representation is not very convenient to work with, and there are many pairs planes we could choose.
+
+\centerFig{line3d-0}
+
+Instead, we will work with a parametric representation: we take a point $O$ on the line and a vector $\vv{d}$ parallel to the line and say that the points belonging to the line are all points
+\[P = O + k \vv{d}\]
+where $k$ is a real parameter.
+
+\centerFig{line3d-1}
+
+Note that here, $\vv{d}$ plays the same role as $\vv{v}$ did for 2D lines (see section~\ref{ss:line-rep}).
+
+If we are given two points $P,Q$ on the line, we can set $O=P$ and $\vv{d}=\vv{PQ}$, so we implement the structure like this:
+\begin{lstlisting}
+struct line3d {
+    p3 d, o;
+    // From two points P, Q
+    line3d(p3 p, p3 q) : d(q-p), o(p) {}
+    // From two planes p1, p2 (requires T = double)
+    line3d(plane p1, plane p2); // will be implemented later
+    
+    // Will be defined later:
+    // - these work with T = int
+    double sqDist(p3 p);
+    double dist(p3 p);
+    bool cmpProj(p3 p, p3 q);
+    // - these require T = double
+    p3 proj(p3 p);
+    p3 refl(p3 p);
+    p3 inter(plane p) {return o - d*p.side(o)/(d|p.n);}
+};
+\end{lstlisting}
+
+\subsection{Distance from a line}
+A point $P$ is on a line $l$ described by $O,\vv{d}$ if and only if $\vv{OP}$ is parallel to $\vv{d}$. This is the case when $\crossv{d}{OP} = \vv{0}$.
+
+\centerFig{line3d-2}
+
+More generally, this product $\crossv{d}{OP}$ also gives us information about the distance to the line: the distance from $l$ to $P$ is equal to
+\[\frac{\big\|\crossv{d}{OP}\big\|}{\big\|\vv{d}\big\|}\]
+%Note that this expression also works for 2D lines; indeed, the norm of $\crossv{d}{OP}$ is equivalent to the 
+\begin{lstlisting}
+double sqDist(p3 p) {return sq(d*(p-o))/sq(d);}
+double dist(p3 p) {return sqrt(sqDist(p));}
+\end{lstlisting}
+
+\subsection{Sorting along a line}\label{ss:sort-line3d}
+Just like we did with 2D lines in section~\ref{ss:sort-line}, we can sort points according to their position along a line $l$. To find out if a point $P$ should come before another point $Q$, we simply need to check whether
+\[\vv{d}\cdot P < \vv{d}\cdot Q\]
+so we can use the following comparator:
+\begin{lstlisting}
+bool cmpProj(p3 p, p3 q) {return (d|p) < (d|q);}
+\end{lstlisting}
+
+\subsection{Orthogonal projection and reflection}
+Let's say we want to project $P$ on a line $l$, that is find the closest point to $P$ on $l$.
+Our usual approach to projecting things, which is to move $P$ perpendicularly until it touches $l$, doesn't work as well here: indeed, there are many possible directions that are perpendicular to $l$.
+
+\centerFig{line3d-3}
+
+Instead we will start from $O$ and move along the line until we reach the projection of $P$. We have seen in the previous section that taking the dot product with $\vv{d}$ tells us how far some point is along $l$. In fact, if we compute $\dotv{d}{OP}$, this tells us the (signed) distance from $O$ to the projection of $P$, multiplied by $\normv{d}$. So we can find the projection this way:
+\begin{lstlisting}
+p3 proj(p3 p) {return o + d*(d|(p-o))/sq(d);}
+\end{lstlisting}
+
+Once we've found the projection $P'$, we can find the reflection $P''$ easily, since it is twice as far in the same direction: we have $P'' = P' + \vv{PP'}$, which becomes $2P'-P$ if we allow vector operations on points.
+\begin{lstlisting}
+p3 refl(p3 p) {return proj(p)*2 - p;}
+\end{lstlisting}
+
+\subsection{Plane-line intersection}\label{ss:plane-line}
+Let's say we have a plane $\Pi$, represented by vector $\vv{n}$ and real $d$, and a line $l$, represented by point $O$ and $\vv{d}$. To find an intersection between them, we need to find a point $O+k\vv{d}$ that lies on $\Pi$, that is, such that
+\[\vv{n}\cdot\left(O+k\vv{d}\right) = d\]
+
+\centerFig{line3d-4}
+
+Solving for $k$, we find
+\[k = \frac{d - \vv{n}\cdot O}{\dotv{n}{d}} = \frac{-\side_{\Pi}(O)}{\dotv{n}{d}}\]
+which can be implemented directly:
+\begin{lstlisting}
+p3 inter(plane p) {return o - d*p.side(o)/(p.n|d);}
+\end{lstlisting}
+
+Note that this is undefined when $\dotv{n}{d}=0$, that is, when $\Pi$ and $l$ are parallel.\footnote{We take a closer look at criteria for parallelism and perpendicularity in section~\ref{s:angles}.}
+ 
+\subsection{Plane-plane intersection}
+If we are given two non-parallel planes $\Pi_1$ and $\Pi_2$ (defined by $\vv{n_1}$, $d_1$ and $\vv{n_2}$, $d_2$), how can we find their common line?
+
+First we need to find its direction $\vv{d}$. Clearly, the direction needs to be parallel to both planes, so it must be perpendicular to both $\vv{n_1}$ and $\vv{n_2}$. Thus we take $\vv{d} = \crossv{n_1}{n_2}$.
+
+Then we need to find an arbitrary point $O$ that is on both planes. Here, we will actually compute the closest such point to the origin. It is given by
+\[O = \frac{\big(d_1\vv{n_2} - d_2\vv{n_1}\big)\times\vv{d}}{\big\|\vv{d}\big\|^2}\]
+
+Let's analyze this expression. It is the sum of two vectors,
+\begin{align*}
+\vv{v_1} &= \frac{d_1}{\big\|\vv{d}\big\|^2}\left(\crossv{n_2}{d}\right) \\
+\vv{v_2} &= -\frac{d_2}{\big\|\vv{d}\big\|^2}\left(\crossv{n_1}{d}\right)
+\end{align*}
+Because $\vv{v_1}$ is perpendicular to $\vv{n_2}$, it is parallel to $\Pi_2$, while $\vv{v_2}$ is perpendicular to $\vv{n_1}$ and thus parallel to $\Pi_1$. So we can see $\vv{v_1}$ as the vector that leads from the origin to $\Pi_1$ while staying parallel to $\Pi_2$, and $\vv{v_2}$ as the vector that leads from the origin to $\Pi_2$ while staying parallel to $\Pi_1$.
+
+\centerFig{line3d-5}
+
+Let's verify that $O$ is on $\Pi_1$, that is, $\vv{n_1}\cdot O = \vv{n_1}\cdot(\vv{v_1} + \vv{v_2}) = d_1$. Since $\vv{v_2}$ is perpendicular to $\vv{n_1}$, clearly $\dotv{n_1}{v_2} = 0$. What remains is
+\begin{align*}
+\dotv{n_1}{v_1}
+&= \frac{d_1}{\big\|\vv{d}\big\|^2}\left(\crossv{n_2}{d}\right)\cdot\vv{n_1} \\
+&= \frac{d_1}{\big\|\vv{d}\big\|^2}\Big(\crossv{n_1}{n_2}\Big)\cdot\vv{d} \\
+&= \frac{d_1}{\big\|\vv{d}\big\|^2}\left(\dotv{d}{d}\right) \\
+&= d_1
+\end{align*}
+where between the first two lines, we used the fact that the mixed product is conserved if we swap its arguments in a circular way (see exercise~\ref{ex:mixed-props}).
+
+We prove similarly that $O$ is on $\Pi_2$. Finally we note that both $\vv{v_1}$ and $\vv{v_2}$ are perpendicular to $\vv{d}$, so the vector from the origin to $O$ is perpencular to $\vv{d}$, the direction of the line. Therefore it must necessarily arrive on the line at the closest point to the origin.
+
+We can implement this as the following constructor:
+\begin{lstlisting}
+line3d(plane p1, plane p2) {
+    d = p1.n*p2.n;
+    o = (p2.n*p1.d - p1.n*p2.d)*d/sq(d);
+}
+\end{lstlisting}
+
+\subsection{Line-line distance and nearest points}
+Consider line $l_1$ defined by $O_1 + k\vv{d_1}$ and line $l_2$ defined by $O_2 + k\vv{d_2}$.
+If they are parallel, the distance between them is easy to find: just find the distance from $l_1$ to $O_2$.
+Otherwise, they are either intersecting or skew, in which case the question is a bit more complex.
+
+\centerFig{line3d-6}
+
+Let's call $C_1$ the point of $l_1$ that is closest to $l_2$, and $C_2$ the point on $l_2$ that is closest to $l_1$.
+Direction $\vv{C_1C_2}$ should be perpendicular to both $l_1$ and $l_2$.
+Indeed, if it were not, it would be possible to get a smaller distance by moving either $C_1$ or $C_2$.
+So $\vv{C_1C_2}$ is parallel to $\vv{n}=\crossv{d_1}{d_2}$.
+
+\centerFig{line3d-7}
+
+Because of this, we could compute the distance as
+\[|C_1C_2| = \frac{\big|\dotv{C_1C_2}{n}\big|}{\normv{n}}\]
+We don't know $C_1$ or $C_2$ yet, but since the dot product doesn't change when one of the vectors moves perpendicular to the other, we can move $C_1$ to $O_1$ and $C_2$ to $O_2$, so that we get
+\[\frac{\big|\dotv{C_1C_2}{n}\big|}{\normv{n}} = \frac{\big|\dotv{O_1C_2}{n}\big|}{\normv{n}} = \frac{\big|\dotv{O_1O_2}{n}\big|}{\normv{n}}\]
+which gives the following implementation:
+\begin{lstlisting}
+double dist(line3d l1, line3d l2) {
+    p3 n = l1.d*l2.d;
+    if (n == zero) // parallel
+        return l1.dist(l2.o);
+    return abs((l2.o-l1.o)|n)/abs(n);
+}
+\end{lstlisting}
+
+Now, how can we find $C_1$ and $C_2$ themselves? Let's call $\Pi_2$ the plane that contains $l_2$ and is parallel to $n_2$; its normal is $\vv{n_2} = \crossv{d_2}{n}$. Then $C_1$ is the intersection between that plane and line $l_1$, so we can use the formula obtained in section~\ref{ss:plane-line} to find it:
+\[C_1 = O_1 + \frac{\dotv{O_1O_2}{n_2}}{\dotv{d_1}{n_2}}\]
+
+\centerFig{line3d-8}
+
+This is implemented in a straightforward way. If we want $C_2$ instead we just have to swap $l_1$ and $l_2$.
+\begin{lstlisting}
+p3 closestOnL1(line3d l1, line3d l2) {
+    p3 n2 = l2.d*(l1.d*l2.d);
+    return l1.o + l1.d*((l2.o-l1.o)|n2)/(l1.d|n2);
+}
+\end{lstlisting}

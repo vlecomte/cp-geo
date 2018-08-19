@@ -1,0 +1,11 @@
+\newcommand{\abcProducts}[5]{
+    \tkzDefPoints{0/0/A, #1/B, #2/C}
+    
+    \tkzFillSector[R with nodes, color=#5](A,4.5cm)(#3,#4)
+    \tkzDrawSegment[add=0 and 1](A,B)
+    \tkzDrawSegment[add=0 and 1.2](A,C)
+    \tkzDrawPoints(A,B,C)
+    
+    \tkzLabelPoints[below](A,#3)
+    \tkzLabelPoints[left](#4)
+}%

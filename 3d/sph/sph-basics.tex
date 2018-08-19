@@ -1,0 +1,44 @@
+\subsection{Spherical coordinate system}
+A sphere with center $O=(x_0,y_0,z_0)$ and radius $r$ is the set of points at distance exactly $r$ from $O$.
+We can describe it this by equation
+\[(x-x_0)^2+(y-y_0)^2+(z-z_0)^2 = r^2\]
+
+\centerFig{sph-0}
+
+To describe a point on a sphere, we can either directly give its coordinates $x,y,z$ or use the spherical coordinate system: this is the system used to position locations on Earth. We use an angle $\varphi$, the latitude, which tells us how far North the point is (or South, if $\varphi<0$), and an angle $\lambda$, the longitude, which tells us how far East the point is (or West, if $\lambda<0)$. We usually take $\varphi \in [-\frac{\pi}{2},\frac{\pi}{2}]$ and $\lambda \in (-\pi,\pi]$.
+
+\centerFig{sph-1}
+
+If the sphere is centered at the origin, the position represented by coordinates $(\varphi,\lambda)$ is
+\[(r\cos\varphi\cos\lambda, r\cos\varphi\sin\lambda, r\sin\varphi)\]
+where the $z$-axis points North and the $x$-axis points towards meridian $\lambda=0$ (on Earth, the Greenwich meridian).
+%Note that this also gives a parametric representation of the sphere.
+
+The function below finds the position given angles in degrees:
+\begin{lstlisting}
+p3 sph(double r, double lat, double lon) {
+    lat *= M_PI/180, lon *= M_PI/180;
+    return {r*cos(lat)*cos(lon), r*cos(lat)*sin(lon), r*sin(lat)};
+}
+\end{lstlisting}
+
+\subsection{Sphere-line intersection}
+A sphere $(O,r)$ and a line $l$ have either 0, 1, or 2 intersection points.
+
+\centerFig{sph-2}
+
+Finding them is exactly like circle-line intersection: first compute the projection $P$ of the center onto the line, then find the intersections by moving the appropriate distance forward or backward along $l$.
+
+\centerFig{sph-3}
+
+This function returns the number of intersection points and places them in pair \lstinline|out| if they exist.
+\begin{lstlisting}
+int sphereLine(p3 o, double r, line3d l, pair<p3,p3> &out) {
+    double h2 = r*r - l.sqDist(o);
+    if (h2 < 0) return 0; // the line doesn't touch the sphere
+    p3 p = l.proj(o); // point P
+    p3 h = l.d*sqrt(h2)/abs(l.d); // vector parallel to l, of length h
+    out = {p-h, p+h};
+    return 1 + (h2 > 0);
+}
+\end{lstlisting}

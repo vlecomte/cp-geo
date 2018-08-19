@@ -1,0 +1,193 @@
+\section{Polyhedrons}
+In this section, we give a brief introduction to polyhedrons, and show how to compute their surface area and their volume.
+
+\subsection{Definition}
+A polyhedron is a region of space delimited by polygonal faces. Generally, we will describe a polyhedron by listing its faces. Some basic conditions apply:
+\begin{itemize}
+\item all the faces are polygons that don't self-intersect;
+\item two faces either share a complete edge, or share a single vertex, or have no common point;
+\item all edges are shared by exactly two faces;
+\item if we define adjacent faces as faces that share an edge, all faces are connected together.
+\end{itemize}
+
+Here is a polyhedron that respects those conditions:
+\begin{center}
+    \includeFig{polyhedron-0} \\[.5cm]
+    \begin{tabu} to .6\linewidth {X[c]|X[c]}
+        %\toprule
+        \emph{Face type} & \emph{Face visibility} \\
+        \midrule
+        8 triangles & 7 visible \\
+        4 quadrilaterals & 5 hidden \\
+    \end{tabu}
+\end{center}
+
+Note that those conditions don't exclude nonconvex polyhedrons (like the example above), but they do exclude self-crossing polyhedrons.
+
+\subsection{Surface area}
+To compute the surface area of a polyhedron, we need to compute the area of their faces. Like we do for polygons, we denote a face by listing its vertices in order, like $P_1P_2P_3P_4$. The vertices must all be coplanar and the edges should not intersect except at their ends.
+
+\centerFig{polyhedron-1}
+
+How do we find the area of a face $P_1\cdots P_n$? First let's take the most simple case: a triangle $ABC$.
+If we compute cross product $\crossv{AB}{AC}$, its direction is perpendicular to the triangle and its norm is
+\[|AB|\,|AC| \sin\theta\]
+where $\theta$ is the amplitude of angle between $\vv{AB}$ and $\vv{AC}$.
+This is twice the area of triangle $ABC$, as was already noted in section~\ref{ss:polygon-area}.
+So the area of triangle $ABC$ is $\frac{1}{2}\big\|\crossv{AB}{AC}\big\|$.
+
+\centerFig{polyhedron-2}
+
+If we rewrite the vectors we can obtain a more symmetric expression:
+\begin{align*}
+\crossv{AB}{AC}
+&= (B-A)\times(C-A) \\
+&= B \times C - B \times A - A \times C + A \times A \\
+&= A \times B + B \times C + C \times A
+\end{align*}
+
+Let's extend this to a quadrilateral $ABCD$. There are two cases:
+\begin{itemize}
+\item Triangles $ABC$ and $ACD$ are oriented in the same way. In this case, vectors $\crossv{AB}{AC}$ and $\crossv{AC}{AD}$ point in the same direction, and the areas should be added together. So we take the vector sum $\crossv{AB}{AC} + \crossv{AC}{AD}$.
+\item Triangles $ABC$ and $ACD$ are oriented in different ways (the angle at either $B$ or $D$ is concave). In this case, vectors $\crossv{AB}{AC}$ and $\crossv{AC}{AD}$ point in opposite directions, and we should take the difference of the areas. So again, taking the vector sum $\crossv{AB}{AC} + \crossv{AC}{AD}$ will produce the desired effect.
+\end{itemize}
+
+\centerFig{polyhedron-3}
+
+We can reformulate the sum in the same way:
+\begin{align*}
+\crossv{AB}{AC} + \crossv{AC}{AD}
+&= (A \times B + B \times C + C \times A) \\
+&\qquad + (A \times C + C \times D + D \times A) \\
+&= A \times B + B \times C + C \times D + D \times A
+\end{align*}
+
+If we continue with more and more vertices, we can make the following general conclusion. Given a polygon $P_1\cdots P_n$, we can compute the \emph{vector area}
+\[\vv{S} = \frac{P_1 \times P_2 + P_2 \times P_3 + \cdots + P_n \times P_1}{2}\]
+This vector is perpendicular to the polygon, and $\big\|\vv{S}\big\|$ gives its area. It is oriented such that when it points towards the observer, the vertices are numbered in counter-clockwise order.
+
+\centerFig{polyhedron-4}
+
+Note that this is very similar to the 2D formula for area we obtained in section~\ref{ss:polygon-area}. The only thing that changes is that the result is a vector. We can implement this straightforwardly:
+\begin{lstlisting}
+p3 vectorArea2(vector<p3> p) { // vector area * 2 (to avoid divisions)
+    p3 S = zero;
+    for (int i = 0, n = p.size(); i < n; i++)
+        S = S + p[i]*p[(i+1)%n];
+    return S;
+}
+double area(vector<p3> p) {
+    return abs(vectorArea2(p)) / 2.0;
+}
+\end{lstlisting}
+
+\subsection{Face orientation}
+When given an arbitrary polyhedron, an important task is to orient the faces properly, so that we know which side is inside the polyhedron and which side is outside. In particular, we will try to order the vertices of the faces so that their vector areas $\vv{S}$ all points towards the outside of the polyhedron. Note that, depending on the way the polyhedron was obtained, this might already be the case.
+
+\begin{center}
+    \includeFig{polyhedron-5}
+    
+    $\vv{S}$ pointing outside (lengths not to scale)
+\end{center}
+
+While it's not clear when looking at individual faces which side is inside the polyhedron, it's easy to deduce the correct orientation by looking at the orientation of an adjacent face. If two faces share an edge $[PQ]$, and the first face lists $P$ then $Q$ in this order, then the other face should list them in the other order, so that they ``rotate'' in the same direction. Note that because of circularity, in $P_1\cdots P_n$, $P_n$ is considered to come before $P_1$, not after.
+
+\centerFig{polyhedron-6}
+
+So to orient the faces in a consistent way, start from an arbitrary face, and perform a graph traversal on faces. Whenever you go from a face to a neighboring face, reverse the new face's vertex order if the common edge is present in the same order on both faces. This will either orient all vector areas towards the outside, or all towards the inside.
+
+Here is a example implementation:
+\begin{lstlisting}
+// Create arbitrary comparator for map<>
+bool operator<(p3 p, p3 q) {
+    return tie(p.x, p.y, p.z) < tie(q.x, q.y, q.z);
+}
+struct edge {
+    int v;
+    bool same; // = is the common edge in the same order?
+};
+
+// Given a series of faces (lists of points), reverse some of them
+// so that their orientations are consistent
+void reorient(vector<vector<p3>> &fs) {
+    int n = fs.size();
+    
+    // Find the common edges and create the resulting graph
+    vector<vector<edge>> g(n);
+    map<pair<p3,p3>,int> es;
+    for (int u = 0; u < n; u++) {
+        for (int i = 0, m = fs[u].size(); i < m; i++) {
+            p3 a = fs[u][i], b = fs[u][(i+1)%m];
+            // Let's look at edge [AB]
+            if (es.count({a,b})) { // seen in same order
+                int v = es[{a,b}];
+                g[u].push_back({v,true});
+                g[v].push_back({u,true});
+            } else if (es.count({b,a})) { // seen in different order
+                int v = es[{b,a}];
+                g[u].push_back({v,false});
+                g[v].push_back({u,false});
+            } else { // not seen yet
+                es[{a,b}] = u;
+            }
+        }
+    }
+    
+    // Perform BFS to find which faces should be flipped
+    vector<bool> vis(n,false), flip(n);
+    flip[0] = false;
+    queue<int> q;
+    q.push(0);
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+        for (edge e : g[u]) {
+            if (!vis[e.v]) {
+                vis[e.v] = true;
+                // If the edge was in the same order,
+                // exactly one of the two should be flipped
+                flip[e.v] = (flip[u] ^ e.same);
+                q.push(e.v);
+            }
+        }
+    }
+    
+    // Actually perform the flips
+    for (int u = 0; u < n; u++)
+        if (flip[u])
+            reverse(fs[u].begin(), fs[u].end());
+}
+\end{lstlisting}
+
+\subsection{Volume}
+Suppose that the faces are oriented correctly. We will show how to compute the volume of the polyhedron by taking the same approach as in section~\ref{ss:polygon-area} for the 2D polygon area.
+
+Let's choose an arbitrary reference point $O$.
+We will compute the volume of the polyhedron face by face: for a face $P_1\cdots P_n$, if the side of the face seen from $O$ is inside the polygon, add the volume of pyramid $OP_1\cdots P_n$, and otherwise subtract it. That way, by inclusion and exclusion, the final result will be the volume inside the polyhedron.
+
+Since $\vv{S}$ always points towards the outside of the polygon, we just have to check whether $\vv{S}$ points away from $O$ (add) or towards $O$ (subtract).
+
+\centerFig{polyhedron-7}
+
+How do we compute the volume of pyramid $OP_1\cdots P_n$? We can use the formula
+\[\mathrm{volume} = \frac{\mathrm{area\ of\ base}\times\mathrm{height}}{3}\]
+
+It turns out that dot product $\dotv{S}{OP_1}$ computes exactly $(\mathrm{area\ of\ base}\times\mathrm{height})$ in absolute value. Indeed, by definition
+\[\dotv{S}{OP_1} = \big\|\vv{S}\big\|\,|OP_1|\cos\theta\]
+where $\theta$ is the angle between $\vv{S}$ and $\vv{OP_1}$. The norm $\big\|\vv{S}\big\|$ is the area of $P_1\cdots P_n$, the base of the pyramid, and we can easily see that $|OP_1|\cos\theta$ is the height of the pyramid (up to sign).
+
+\centerFig{polyhedron-8}
+
+So the absolute value of $\dotv{S}{OP_1}$ is equal to the volume of pyramid $OP_1\cdots P_n$, and the dot product is positive if $\vv{S}$ points away from $O$, and negative if $\vv{S}$ points towards $O$. This is exactly the sign we want.
+
+For the implementation, we take $O$ to be the origin for convenience. We divide by 6 at the end because we need to divide by 2 to get the correct area and then by 3 because of the formula for the volume of a pyramid.
+\begin{lstlisting}
+double volume(vector<vector<p3>> fs) {
+    double vol6 = 0.0;
+    for (vector<p3> f : fs)
+        vol6 += (vectorArea2(f)|f[0]);
+    return abs(vol6) / 6.0;
+}
+\end{lstlisting}
+
+In case the vector areas $\vv{S}$ all point towards the inside of the polyhedron (which may happen after applying the face orientation procedure in the previous section), \lstinline|vol6| will be correct but will have a negative sign. If this happens, flip all the faces so that all $\vv{S}$ now point outside.

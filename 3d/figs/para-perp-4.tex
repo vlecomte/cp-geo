@@ -1,0 +1,10 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=.85]
+    \coordinate (O) at (0,0,0);
+    \coordinate (P) at (0,1,.5);
+    \coordinate (P') at (0,1,1.5);
+    \draw[dashed] (0,1,0) -- (0,1,-1.5);
+    \fill[lg, opacity=.9] (O) ++(-1,-1,0) -- ++(3,0,0) -- ++(0,3,0) -- ++(-3,0,0) -- cycle;
+    \draw (0,1,0) -- (0,1,2);
+    \draw[-stealth] (P) ++(0,.5,0) -- ++(0,0,1) node[pos=.5,right] {$\vv{d}$};
+    \node[point,label=above:{$O$}] at (1,0,0) {};
+\end{tikzpicture}

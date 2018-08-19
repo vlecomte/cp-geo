@@ -1,0 +1,16 @@
+\newcommand{\fig}[2]{
+    \begin{tikzpicture}[scale=0.7]
+    \tkzDefPoints{0/0/A, 2/.5/B, #1/P}
+    \tkzDefPointBy[projection = onto A--B](P) \tkzGetPoint{P'}
+    \tkzDrawSegment[gray, dashed](P,#2)
+    \tkzDrawSegment(A,B)
+    \tkzDrawPoints(A,B,P)
+
+    \tkzLabelPoints[below](A,B)
+    \tkzLabelPoints[above](P)
+    \end{tikzpicture}
+}%
+\begin{tabu} to .9\linewidth {X[c]X[c]X[c]}
+\fig{-1/1.5}{A} & \fig{1/2}{P'} & \fig{2.5/2}{B} \\
+closest to $A$ & closest to projection & closest to $B$ \\
+\end{tabu}

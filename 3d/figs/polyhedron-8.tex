@@ -1,0 +1,22 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1.5]
+    \coordinate (P1) at (1,0,0);
+    \coordinate (P2) at (0,1,0);
+    \coordinate (P3) at (0,0,0);
+    \coordinate (O) at (.6,.2,-1);
+    
+    
+    \tdplotdefinepoints(0,1,0)(0,1,-1)(.8,.2,-1)
+    \tdplotdrawpolytopearc[semithick]{.5}{below}{$\theta$}
+    
+    \draw[gray, semithick, dashed] (O) -- (0,1,-1);
+    \draw[<->] (0,1.1,-1) -- (0,1.1,0) node[pos=.5,right]{$|OP_1|\cos\theta$};
+    
+    \draw[gray, semithick, dotted] (O) -- (P1) (O) -- (P2) (O) -- (P3);
+    \node[point, label=left:{$O$}] at (O) {};
+    %\node[left] at (O) {$O$};
+    \draw[black, semithick] (P2) ++(0,0,-1.5) -- ++(0,0,2.5);
+    \fill[lg, opacity=.8] (P1) -- (P2) -- (P3);
+    \draw[line join=round] (P1) node[left] {$P_3$} -- (P2) node[right,yshift=.2cm] {$P_1$} -- (P3) node[above left, yshift=-.1cm, xshift=.05cm] {$P_2$} -- cycle;
+    \draw[-stealth] (.333,.333,0) -- ++(0,0,.8) node[right] {$\vv{S}$};
+    \draw (O) -- (P2);
+\end{tikzpicture}

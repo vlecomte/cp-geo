@@ -1,0 +1,20 @@
+\begin{tikzpicture}[scale=1.5]
+\tkzDefPoints{0/0/O, 1/0/A, 0/1/B, .8/.6/P, -.1/0/dx, 0/-.1/dy}
+\tkzDefPointBy[projection = onto O--A](P) \tkzGetPoint{PX}
+\tkzDefPointBy[projection = onto O--B](P) \tkzGetPoint{PY}
+\tkzDefPointsBy[symmetry = center O](A,B){}
+\tkzDefPointsBy[translation = from O to dy](PX){}
+\tkzDefPointsBy[translation = from O to dx](PY){}
+
+\tkzDrawSegments[dashed](P,PX P,PY)
+\tkzDrawSegments[<->](dy,PX' dx,PY')
+\tkzDrawCircle(O,A)
+\tkzDrawPoints(P)
+\tkzDrawSegments[add=.15 and .15, ->](A',A B',B)
+\tkzDrawSegments(O,P)
+\tkzMarkAngle[size=.3](A,O,P)
+
+\tkzLabelSegment[below](dy,PX'){$r\cos\theta$}
+\tkzLabelSegment[left](dx,PY'){$r\sin\theta$}
+\tkzLabelAngle[pos=.5](A,O,P){$\theta$}
+\end{tikzpicture}

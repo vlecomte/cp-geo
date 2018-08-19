@@ -1,0 +1,17 @@
+\newcommand{\imprecise}[2]{
+    \tkzDefPoint(#1){#2}
+    \tkzFillCircle[R, color=black!25](#2,.25cm)
+    \tkzDrawPoint(#2)
+}%
+\newcommand{\figBasisCircleCircle}{
+    \tkzDefPoints{0/0/C1, 3.5/0/C2}
+    \tkzInterCC[R](C1,2.7cm)(C2,2cm) \tkzGetPoints{J}{I}
+    \tkzDefMidPoint(I,J) \tkzGetPoint{P}
+    
+    \tkzDrawPoints(C1,C2)
+    \tkzDrawCircle[color=gray](C1,I)
+    \tkzDrawCircle[color=gray](C2,I)
+    
+    \tkzLabelPoint[left](C1){$C_1$}
+    \tkzLabelPoint[right](C2){$C_2$}
+}%

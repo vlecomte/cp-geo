@@ -1,0 +1,15 @@
+\begin{tikzpicture}[scale=0.7]
+\tkzDefPoints{0/0/O, 0/0/P, 2/1/Q, -1/2/A, 3/0/B}
+\tkzDefPointsBy[projection = onto P--Q](A,B){}
+
+\tkzDrawSegment[add=1 and 1, ->](P,Q)
+\node[point] (nA) at (A) {};
+\node[point] (nB) at (B) {};
+\draw[<->] (nA) -- (A');
+\draw[<->] (nB) -- (B');
+
+\tkzLabelPoint[above](A){$A$}
+\tkzLabelPoint[below](B){$B$}
+\tkzLabelSegment[left](A,A'){$\dist_l(A)$}
+\tkzLabelSegment[right](B,B'){$\dist_l(B)$}
+\end{tikzpicture}

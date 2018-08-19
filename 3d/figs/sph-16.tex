@@ -1,0 +1,28 @@
+\newcommand{\both}{
+    \tdplotdrawpolytopearc[thick]{1}{}{}
+    \begin{pgfonlayer}{front}
+        \tdplotdrawpolytopebackarc[gray,semithick,dashed]{1}{}{}
+    \end{pgfonlayer}
+}%
+\begin{tikzpicture}[tdplot_main_coords, scale=1.5]
+    \drawSphere{1}{22.5}{22.5}{.2}
+    \coordinate (O) at (0,0,0);
+    \coordinate (A) at (1.000,0.000,0.000); % 0,0
+    \coordinate (B) at (0.354,0.854,0.383); % 22.5,67.5
+    \coordinate (C) at (0.707,0,0.707);%(0.653,0.271,0.707); % 45,22.5
+    \tdplotdefinepoints(0,0,0)(1.000,0.000,0.000)(0.354,0.854,0.383) % AB
+    \both
+    \tdplotdefinepoints(0,0,0)(0.354,0.854,0.383)(0.707,0,0.707) % BC
+    \both
+    \tdplotdefinepoints(0,0,0)(0.707,0,0.707)(1.000,0.000,0.000) % CA
+    \both
+    \node[point,label=left:{$A$}] at (A) {};
+    \node[point,label=below:{$B$}] at (B) {};
+    \node[point,label=above:{$C$}] at (C) {};
+    \begin{scope}[tdplot_screen_coords]
+        \node at (-.1,-.05) {$S$};
+        \draw (45:.9) -- ++(45:.2) node[above right,xshift=-.1cm,yshift=-.1cm] {$S_A$};
+        \draw (-60:.9) -- ++(-60:.2) node[below] {$S_B$};
+        \draw (180:.9) -- ++(180:.2) node[left] {$S_C$};
+    \end{scope}
+\end{tikzpicture}

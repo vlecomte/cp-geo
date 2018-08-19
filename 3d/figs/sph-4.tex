@@ -1,0 +1,17 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1.6]
+    \coordinate (O) at (0,0,0);
+    \drawSphere{1}{22.5}{22.5}{.4}
+    \coordinate (P) at (0.707,0.707,0.000);
+    \coordinate (Q) at (0.000,0.707,0.707);
+    \tdplotdefinepoints(0,0,0)(0.707,0.707,0.000)(0.000,0.707,0.707)
+    \tdplotdrawpolytopearc[thick]{1}{}{}
+    \tdplotdrawpolytopebackarc[semithick,gray,dashed]{1}{}{}
+    \begin{pgfonlayer}{middle}
+        \draw[thick] (O) -- (P);
+        \draw[thick] (O) -- (Q);
+        \node[point,label=left:{$O$}] at (O) {};
+        \tdplotdrawpolytopearc[thick]{.3}{right}{$\theta$}
+    \end{pgfonlayer}
+    \node[point,label=right:{$A$}] at (P) {};
+    \node[point,label=right:{$B$}] at (Q) {};
+\end{tikzpicture}

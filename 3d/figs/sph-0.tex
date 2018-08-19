@@ -1,0 +1,23 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1.8]
+    \coordinate (O) at (0,0,0);
+    \drawSphere{1}{22.5}{22.5}{.4}
+    \draw[thick,->] (1,0,0) -- (2,0,0) node[below] {$x$};
+    \draw[thick,->] (0,1,0) -- (0,2,0) node[below] {$y$};
+    \draw[thick,->] (0,0,1) -- (0,0,2) node[above] {$z$};
+    \node[point] at (1,0,0) {};
+    \node[point] at (0,1,0) {};
+    \node[point] at (0,0,1) {};
+    
+    \begin{pgfonlayer}{behind}
+        \draw[thick] (-2,0,0) -- (-1,0,0) (0,-2,0) -- (0,-1,0) (0,0,-1.5) -- (0,0,-1);
+    \end{pgfonlayer}
+    \begin{pgfonlayer}{middle}
+        \draw[thick]
+            (-1,0,0) -- (1,0,0) node[pos=.8,above] {$r$}
+            (0,-1,0) -- (0,1,0) node[pos=.75,above] {$r$}
+            (0,0,-1) -- (0,0,1) node[pos=.75,left] {$r$};
+        %\node[point] at (-1,0,0) {};
+        %\node[point] at (0,-1,0) {};
+        %\node[point] at (0,0,-1) {};
+    \end{pgfonlayer}
+\end{tikzpicture}

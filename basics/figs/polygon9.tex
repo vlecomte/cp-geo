@@ -1,0 +1,10 @@
+\begin{tikzpicture}
+\coordinate (orig) at (0,0);
+\coordinate (left) at (-2,0);
+\coordinate (right) at (2,0);
+\pic[fill=blue!25, angle radius=1.5cm] {angle=right--orig--left};
+\node[hollow, blue, fill=white, label=below:{$(-\half + \turn t, \turn t]$}, label=above:{\color{blue}$(\turn t, \half + \turn t]$}] (O) at (orig) {};
+%\node[below=(O)] {test};
+\draw[blue] (O) -- (left);
+\draw[blue, dashed] (O) -- (right);
+\end{tikzpicture}

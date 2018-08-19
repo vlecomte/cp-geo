@@ -1,0 +1,39 @@
+\newcommand{\fig}[4]{
+    \begin{tikzpicture}
+    #2
+    \tkzClip
+    \tkzDefPoints{0/0/A, 2/1/B}
+    \tkzDefPointBy[rotation = center A angle #1](B) \tkzGetPoint{C'}
+    \tkzDefPointBy[homothety = center A ratio .7](C') \tkzGetPoint{C}
+    
+    #3
+    
+    \draw (B) -- (A) -- (C);
+    \tkzMarkAngle[size=.5, arrows=->](B,A,C)
+    
+    \tkzLabelPoints[right](B)
+    
+    #4
+    \end{tikzpicture}
+}%
+\begin{tabu} to \linewidth {X[c]X[c]}
+\fig{50}{
+    \tkzInit[xmin=-1,xmax=2.5,ymin=-1,ymax=2]
+}{
+    \tkzFillSector[R with nodes, color=posBack](A,.5cm)(B,C)
+}{
+    \tkzLabelPoints[left](A)
+    \tkzLabelPoints[above](C)
+} &
+\fig{280}{
+    \tkzInit[xmin=-1,xmax=2.5,ymin=-2,ymax=1.5]
+}{
+    \tkzFillSector[R with nodes, color=negBack](A,.5cm)(C,B)
+}{
+    \tkzLabelPoints[left=-.1cm](A)
+    \tkzLabelPoints[right](C)
+} \\
+$\orient(A,B,C) > 0$ & $\orient(A,B,C) < 0$ \\
+\lstinline|angle()| $= 50\degree$ & \lstinline|angle()| $= 80\degree$ \\
+\lstinline|orientedAngle()| $= 50\degree$ & \lstinline|orientedAngle()| $= 280\degree$ \\%$= 360\degree - 80\degree = 280\degree$ \\
+\end{tabu}

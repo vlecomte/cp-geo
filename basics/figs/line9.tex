@@ -1,0 +1,18 @@
+\begin{tikzpicture}[scale=0.7]
+\tkzDefPoints{0/0/P, 2/1/Q, -.8/1.6/T, -1/-.5/V, -.8/-.4/W}
+\tkzDefPointsBy[translation = from P to Q](T){}
+\tkzDefPointsBy[translation = from P to T](V,W){}
+
+\tkzDrawSegment[gray, dashed](W,W')
+\tkzMarkRightAngle[color=gray](Q,W,W')
+\tkzMarkRightAngle[color=gray](T',W',W)
+\tkzDrawSegment[add=1 and 1, ->](P,Q)
+\tkzDrawSegment[add=1 and 1, ->](T,T')
+\tkzDrawSegment[<->](V,V')
+
+\tkzLabelSegment[above, pos=1.5](P,Q){$l$}
+\tkzLabelSegment[below, sloped](P,Q){$ax+by = c$}
+\tkzLabelSegment[below, pos=1.7](T,T'){$l'$}
+\tkzLabelSegment[above, sloped](T,T'){$ax+by = c'$}
+\tkzLabelSegment[left, pos=.4](V,V'){$\delta$}
+\end{tikzpicture}

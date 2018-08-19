@@ -1,0 +1,12 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1.5]
+    \coordinate (O) at (0,0,0);
+    \coordinate (P) at (.5,.8,.8);
+    \fill[lg, opacity=.8] (0,0,0) ++(2,2,0) -- ++(-3,0,0) -- ++(0,-3,0) -- ++(3,0,0) -- cycle;
+    %\draw[-stealth] (O) -- (P) node[right] {$P$};
+    \node[point, label={below left,xshift=.1cm,yshift=.1cm:{$P$}}] at (P) {};
+    \draw[dashed] (0,.8,.8) -- (0,0,.8) -- (.5,0,.8) -- (.5,0,0) -- (.5,.8,0) -- (0,.8,0) -- cycle;
+    \draw[dashed] (P) -- (0,.8,.8) (P) -- (.5,0,.8) (P) -- (.5,.8,0);
+    \draw[-stealth] (O) -- (1,0,0) node[left] {$\vv{d_x}$};
+    \draw[-stealth] (O) -- (0,1,0) node[right] {$\vv{d_y}$};
+    \draw[-stealth] (O) -- (0,0,1) node[above] {$\vv{d_z}$};
+\end{tikzpicture}

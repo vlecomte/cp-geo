@@ -1,0 +1,20 @@
+\begin{tikzpicture}
+\coordinate (O) at (0,0);
+\foreach \raw [count=\i] in {(0,0),(1,0),(2,1),(1,1),(0,2)} {
+    \def\p{($((0.8,-0.6) + 7/10*(\raw$)}
+    \node[coordinate] (A\i) at \p {};
+    \begin{scope}[rotate=50]
+    \node[coordinate] (B\i) at \p {};
+    \end{scope}
+    %\draw[gray, dashed, semithick] (O) -- (B\i);
+}
+\draw[gray, dashed, semithick] (O) -- (A1);
+\draw[gray, dashed, semithick] (O) -- (B1);
+\draw[gray, dashed, semithick] (O) -- (A5);
+\draw[gray, dashed, semithick] (O) -- (B5);
+\pic[gray, draw, angle radius=0.4cm, "$\phi$", angle eccentricity=1.45] {angle=A1--O--B1};
+\pic[gray, draw, angle radius=0.4cm, "$\phi$", angle eccentricity=1.5] {angle=A5--O--B5};
+\draw (A1) -- (A2) -- (A3) -- (A4) -- (A5) -- cycle;
+\draw[gray] (B1) -- (B2) -- (B3) -- (B4) -- (B5) -- cycle;
+\node[point, label=left:{$c$}] at (O) {};
+\end{tikzpicture}

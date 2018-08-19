@@ -1,0 +1,16 @@
+\begin{tikzpicture}[scale=0.7]
+\coordinate (orig) at (0,0);
+\coordinate (left) at (-3.5,0);
+\coordinate (right) at (3.5,0);
+\pic[fill=blue!25, angle radius=2.2cm] {angle=right--orig--left};
+\node[hollow, blue, fill=white] (O) at (orig) {};
+\draw[blue] (O) -- (left);
+\draw[blue, dashed] (O) -- (right);
+\node[point] [label=below:{$\vv{v_0}$}] (v0) at (-1,-.5) {};
+\node[point] [label=below:{$\vv{v_1}$}] (v1) at (0,-1.5) {};
+\node[point] [label=below:{$\vv{v_2}$}] (v2) at (2,-1) {};
+\node[point] [label=below:{$\vv{v_3}$}] (v3) at (1.5,0) {};
+\node[point, blue] [label=above:{\color{blue} $\vv{v_4}$}] (v4) at (1,2) {};
+\node[point, blue] [label=above:{\color{blue} $\vv{v_5}$}] (v5) at (-1,1.25) {};
+\node[point, blue] [label=above:{\color{blue} $\vv{v_6}$}] (v6) at (-2,0) {};
+\end{tikzpicture}

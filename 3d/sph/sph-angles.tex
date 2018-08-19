@@ -1,0 +1,115 @@
+\subsection{Angles on a sphere}
+Given two spherical segments $[AB]$ and $[AC]$ on a sphere around the origin $O$, how do we compute the amplitude of the angle they form on the surface of the sphere at $A$? This angle is equal to the angle between planes $OAB$ and $OAC$, or more precisely between their normals $A \times B$ and $A \times C$. Thus we can find the angle using \lstinline|angle()|, which gives values in $[0,\pi]$.
+
+\centerFig{sph-13}
+
+\begin{lstlisting}
+double angleSph(p3 a, p3 b, p3 c) {
+    return angle(a*b, a*c);
+}
+\end{lstlisting}
+
+If instead of values in $[0,\pi]$, we want to know the oriented angle\footnote{We defined a similar notion in 2D in section~\ref{ss:cross}.} between $[AB]$ and $[AC]$, that is, how much we rotate if we go from $B$ to $C$ around $A$ counterclockwise, then we need to know on which side of plane $OAB$ point $C$ lies. If $C$ lies ``to the left'' of plane $OAB$, the angle given by \lstinline|angle()| is correct, but if $C$ lies ``to the right'', we should subtract it from $2\pi$.
+
+\centerFig{sph-14}
+
+\begin{lstlisting}
+double orientedAngleSph(p3 a, p3 b, p3 c) {
+    if ((a*b|c) >= 0)
+        return angleSph(a, b, c);
+    else
+        return 2*M_PI - angleSph(a, b, c);
+}
+\end{lstlisting}
+
+\subsection{Spherical polygons and area}
+Given points $P_1,\ldots,P_n$ on a sphere, let's call spherical polygon $P_1\cdots P_n$ the region on the sphere delimited by spherical segments $[P_1P_2]$, $[P_2P_3]$, \ldots, $[P_nP_1]$, and which is on the left when travelling from $P_1$ to $P_2$. The counterclockwise order is important here because both ``sides'' on the contour are valid candidates.
+
+\centerFig{sph-15}
+
+Computing the area of such a spherical polygon is surprisingly simple. First, let's consider the case of a spherical triangle $ABC$. It's area is given by
+\[r^2(\alpha + \beta + \gamma - \pi)\]
+where $r$ is the radius of the sphere and $\alpha,\beta,\gamma$ are the amplitudes of the three interior angles of $ABC$. Note that this would be equal to $0$ if $ABC$ were on a plane, but because of the curvature of the sphere, the angles of a triangle actually add up to more than $\pi$.
+
+This is actually pretty easy to prove. If we prolong the segments $[AB]$, $[BC]$, and $[CA]$ into their full great-circles, this splits the sphere into 8 parts, of which four are the direct image of each other by point reflection around the center of the sphere. Let's call $S$ the area of triangle $ABC$, and $S_A$ (resp. $S_B,S_C$ the area of the triangle on the other side of $[BC]$ (resp. $[CA],[AB]$).
+
+\centerFig{sph-16}
+
+Since those four triangles cover half of the sphere together, we have $S+S_A+S_B+S_C = 2\pi r^2$.
+Besides if we take triangle $ABC$ and the triangle on the other side of $[BC]$, together they form a whole \emph{spherical wedge}\footnote{A section of a sphere determined by two flat cuts going through the center. \url{https://en.wikipedia.org/wiki/Spherical_wedge}} of angle $\alpha$.
+So their combined area should be $\alpha/2\pi$ of the total area, that is $S+S_A = 2\alpha r^2$.
+Similarly, we obtain $S+S_B = 2\beta r^2$ and $S+S_C = 2\gamma r^2$.
+
+Combining those four equations, we obtain
+\begin{align*}
+2S &= (S+S_A) + (S+S_B) + (S+S_C) - (S+S_A+S_B+S_C)\\
+&= r^2(2\alpha + 2\beta + 2\gamma - 2\pi)
+\end{align*}
+which is the desired result.
+
+The formula can be extended to an arbitrary spherical polygon $P_1\cdots P_n$. The area is given by 
+\[r^2\,\big[\,\mathrm{sum\ of\ interior\ angles} - (n - 2)\pi\,\big]\]
+This can be proven by decomposing the $n$-gon into $n-2$ triangles.
+
+\begin{lstlisting}
+double areaOnSphere(double r, vector<p3> p) {
+    int n = p.size();
+    double sum = -(n-2)*M_PI;
+    for (int i = 0; i < n; i++)
+        sum += orientedAngleSph(p[(i+1)%n], p[(i+2)%n], p[i]);
+    return r*r*sum;
+}
+\end{lstlisting}
+
+\subsection{Solid angle}
+The \emph{solid angle} subtended by an object at an observation point $O$ is the apparent size of the object when looking at it from $O$. For example, the Sun and the Moon have roughly the same apparent size when watched from the Earth, even though their actual sizes are very different. So we say that they subtend the same solid angle at the observation point that is Earth.
+
+Let's define it more precisely. Just like the planar angle subtended by an object is the length of the object once it is projected onto a unit circle around the point, the solid angle subtended by an object is the area of the object once it is projected onto a unit sphere around the point.
+
+\centerFig{sph-17}
+
+The unit for solid angles is the steradian (\steradian), and because the area of a unit sphere is $4\pi$, a solid angle of $4\pi$ means that the observation point is completely surrounded, while a solid angle of $2\pi$ means that half of the view is covered.
+
+We can easily find the solid angle subtended by a polygon by using the function \lstinline|areaOnSphere()| we just defined and setting $r=1$. Indeed, all it does is compute angles, so the distance from the origin $O$ doesn't matter.
+
+
+\centerFig{sph-18}
+
+This also allows us to find the solid angle subtended by a polyhedron if we know which faces are visible from $O$.
+
+\begin{mathy}
+The solid angle subtended by a small surface $d\vv{S}$ at a position $\vv{r}$ is inversely proportional to the square of the distance from the origin, $\normv{r}^2$, and proportional to the cosine of the angle between $\vv{r}$ and $d\vv{S}$, because a surface seen from sideways occupies less of the view. So we can also find solid angles with the following integral:
+\[\Omega = \int \frac{\vv{r}\cdot d\vv{S}}{\normv{r}^3}\]
+\end{mathy}
+
+\subsection{3D winding number}\label{ss:wind-3d}
+We can use this notion of solid angle to implement a 3D version of winding number that we defined in section~\ref{ss:wind-2d}. Given an observation point $O$ and a polyhedron, we will compute an integer that is
+\begin{itemize}
+\item $0$ if $O$ is outside the polyhedron;
+\item $1$ if $O$ is inside the polyhedron, and the vector areas $\vv{S}$ of the faces are oriented towards the outside;
+\item $-1$ if $O$ is inside the polyhedron, and the vector areas $\vv{S}$ of the faces are oriented towards the inside.
+\end{itemize}
+
+To do this, we will consider the faces one by one.
+For each one, if its vector area $\vv{S}$ points away from $O$, we add the solid angle it subtends to the total, and otherwise we subtract it.
+That way:
+\begin{itemize}
+\item if $O$ is outside of the polyhedron, the solid angles will cancel out;
+\item if $O$ is inside of the polyhedron and the $\vv{S}$ point towards the outside, there will mostly be additions and the total will add up to $4\pi$;
+\item if $O$ is inside the polyhedron and the $\vv{S}$ point towards the inside, there will mostly be subtractions and the total will add up to $-4\pi$.
+\end{itemize}
+Dividing this total angle by $4\pi$ gives the desired winding number.
+
+\centerFig{sph-19}
+
+To find what quantity to add or subtract for each face, we will use function \lstinline|areaOnSphere()| directly. If $\vv{S}$ points away from $O$, it will return a value in $(0,2\pi)$, the area of the projection of the face a unit sphere, which we should keep. If $\vv{S}$ points towards $O$, it will return a value in $(2\pi,4\pi)$, the area of the \emph{rest} of the unit sphere, so we should remove $4\pi$ to get the subtraction we want.
+
+Since we always want the value to be in $(-2\pi,2\pi)$ in the end, we can use function \lstinline|remainder()|, giving the simple implementation below.
+\begin{lstlisting}
+int windingNumber3D(vector<vector<p3>> fs) {
+    double sum = 0;
+    for (vector<p3> f : fs)
+        sum += remainder(areaOnSphere(1, f), 4*M_PI);
+    return round(sum / (4*M_PI));
+}
+\end{lstlisting}

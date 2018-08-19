@@ -1,0 +1,196 @@
+\section{Points, products and orientation}
+In this first section, we define our point representation, we explain how the dot and cross products we saw in 2D translate into 3D, and we show how a combination of the two, the \emph{mixed product}, can help us define a 3D analog of the \lstinline|orient()| function.
+
+\subsection{Point representation}
+We will define points and vectors in space by their coordinates $(x,y,z)$: their positions along three perpendicular axes.
+
+\centerFig{p3-0}
+
+As we did in 2D, we start with some basic operators.
+\begin{lstlisting}
+typedef double T;
+struct p3 {
+    T x,y,z;
+    
+    // Basic vector operations
+    p3 operator+(p3 p) {return {x+p.x, y+p.y, z+p.z};}
+    p3 operator-(p3 p) {return {x-p.x, y-p.y, z-p.z};}
+    p3 operator*(T d) {return {x*d, y*d, z*d};}
+    p3 operator/(T d) {return {x/d, y/d, z/d};} // only for floating-point
+    
+    // Some comparators
+    bool operator==(p3 p) {return tie(x,y,z) == tie(p.x,p.y,p.z);}
+    bool operator!=(p3 p) {return !operator==(p);}
+};
+\end{lstlisting}
+Choosing the scalar type \lstinline|T| is done the same way as in 2D, see \ref{ss:point-representation} for our remarks on that.
+
+For convenience, we also define a zero vector $\vv{0}=(0,0,0)$:
+\begin{lstlisting}
+p3 zero{0,0,0};
+\end{lstlisting}
+
+\subsection{Dot product}
+The dot product is exactly the same as in 2D. It is defined as \[\dotv{v}{w} = \normv{v}\normv{w} \cos\theta\] where $\normv{v}$ and $\normv{w}$ are the lengths of the vectors and $\theta$ is amplitude of the angle between $\vv{v}$ and $\vv{w}$.
+%This amplitude $\theta$ is measured on the plane that contains both $\vv{v}$ and $\vv{w}$.
+So in other words, the 3D dot product of $\vv{v}$ and $\vv{w}$ is equal to the 2D dot product they would have on a plane that contains them both.
+
+We recall the possible cases for the sign of the dot product:
+\centerFig{products0}
+
+%Since 3D geometry requires a very good mastery of the properties of dot and cross product, we recall all of them here and add a few:
+We recall some properties of dot product and add a few:
+\begin{itemize}
+%\item $\dotv{v}{w}$ is a measure of how parallel $\vv{v}$ and $\vv{w}$ are;
+\item symmetry: $\dotv{v}{w} = \dotv{w}{v}$;
+\item linearity: $(\vv{v_1}+\vv{v_2})\cdot\vv{w} = \dotv{v_1}{w} + \dotv{v_2}{w}$ (also on the right);
+%\vv{v}\cdot(\vv{w_1}+\vv{w_2}) &= \dotv{v}{w_1} + \dotv{v}{w_2}
+%\end{align*}
+\item $\dotv{v}{w} = 0$ iff $\vv{v}$ and $\vv{w}$ are perpendicular;
+\item $\dotv{v}{w}$ stays constant if $\vv{w}$ moves perpendicular to $\vv{v}$.
+%\item in physics, if $\vv{F}$ is a force applied along displacement $\vv{s}$, the work done is $W=\dotv{F}{s}$.
+\end{itemize}
+
+Like in 2D, dot product is very simple to implement:
+\begin{lstlisting}
+T operator|(p3 v, p3 w) {return v.x*w.x + v.y*w.y + v.z*w.z;}
+\end{lstlisting}
+
+Since 3D geometry uses dot and cross product a lot, to shorten notations we will be using operator \lstinline{|} for dot product and operator \lstinline{*} for cross product. We chose them for these mostly arbitrary reasons:
+\begin{itemize}
+\item \lstinline{|} has a lower precedence than \lstinline|*| which is desirable, it kind of looks like a ``parallel'' operator, and since it most often has to be parenthesized (e.g. \ttt{(v|w) == 0}), it can be a bit reminiscent of the inner product notation $\langle v,w \rangle$;
+\item \lstinline|*| is the closest thing to a cross in overloadable R++ operators, and the compiler doesn't produce a warning if you don't paranthesize \lstinline|b*c| in expressions such as \lstinline{a|b*c}, which we will use a lot.
+\end{itemize}
+
+We define the usual \lstinline{sq()} and \lstinline{abs()} based on dot product and add a \lstinline|unit()| function that makes the norm of a vector equal to 1 while preserving its direction.
+\begin{lstlisting}
+T sq(p3 v) {return v|v;}
+double abs(p3 v) {return sqrt(sq(v));}
+p3 unit(p3 v) {return v/abs(v);}
+\end{lstlisting}
+
+Like in 2D, we can also use dot product to find the amplitude in $[0,\pi]$ of the angle between vectors $\vv{v}$ and $\vv{w}$, see secton~\ref{ss:dot} for more details.
+\begin{lstlisting}
+double angle(p3 v, p3 w) {
+    double cosTheta = (v|w) / abs(v) / abs(w);
+    return acos(max(-1.0, min(1.0, cosTheta)));
+}
+\end{lstlisting}
+
+\subsection{Cross product}
+While the cross product in 2D is a scalar, in 3D it is a vector. If $\vv{v}$ and $\vv{w}$ are parallel, $\crossv{v}{w} = \vv{0}$, and otherwise it is defined as
+\[\crossv{v}{w} = (\normv{v}\normv{w} \sin\theta)\vv{n}\]
+where $\normv{v}$ and $\normv{w}$ are the lengths of the vectors, $\theta$ is amplitude of the angle between $\vv{v}$ and $\vv{w}$, and $\vv{n}$ is a unit vector perpendicular to both $\vv{v}$ and $\vv{w}$ chosen using the right-hand rule. Note that the norm of the 3D cross product is equal to the absolute value of the 2D cross product.
+
+\centerFig{p3-1}
+
+The right-hand rule says this: if you take your right hand, align your thumb with $\vv{v}$ and your extended index $\vv{w}$, and fold your middle finger at a $90\degree$ angle, then it will point in the direction of $\crossv{v}{w}$. Another way to express it is to say that if you draw $\vv{v}$ and $\vv{w}$ on a sheet of paper and look at the sign of their 2D cross product, if it is positive $\crossv{v}{w}$ will point up from the sheet, and if it is negative $\crossv{v}{w}$ will point down through the sheet.
+
+\centerFig{p3-2}
+
+We summarize some key properties of the cross product:
+\begin{itemize}
+\item anti-symmetry: $\crossv{v}{w} = -\crossv{w}{v}$;
+\item linearity: $(\vv{v_1}+\vv{v_2})\times\vv{w} = \crossv{v_1}{w} + \crossv{v_2}{w}$ (also on the right);
+\item $\crossv{v}{w}$ is perpendicular to both $\vv{v}$ and $\vv{w}$;\footnote{\label{f:if-not-zero}if $\crossv{v}{w} \neq \vv{0}$}
+\item $\crossv{v}{w}$ is perpendicular to the plane containing $\vv{v}$ and $\vv{w}$;\cref{f:if-not-zero}
+\item $\crossv{v}{w} = \vv{0}$ iff $\vv{v}$ and $\vv{w}$ are parallel;
+\item $\crossv{v}{w}$ stays constant if $\vv{w}$ moves parallel to $\vv{v}$.
+%\item in physics, if $\vv{F}$ is a force applied with a lever arm vector $\vv{r}$, the resulting torque is $\vv{\tau} = \crossv{r}{F}$.
+\end{itemize}
+
+Among those, the one which we will use most often is the fact that it is perpendicular to $\vv{v}$ and $\vv{w}$.
+
+The cross product can be computed this way:
+\begin{lstlisting}
+p3 operator*(p3 v, p3 w) {
+    return {v.y*w.z - v.z*w.y,
+            v.z*w.x - v.x*w.z,
+            v.x*w.y - v.y*w.x};
+}
+\end{lstlisting}
+Indeed, it is easy to check that this vector is perpendicular to both $\vv{v}$ and $\vv{w}$ using dot product. Here it is for $\vv{v}$:
+\begin{align*}
+(\crossv{v}{w})\cdot \vv{v}
+&= (v_yw_z - v_zw_y, v_zw_x - v_xw_z, v_xw_y - v_yw_x) \cdot (v_x,v_y,v_z) \\
+&= v_xv_yw_z - v_xv_zw_y + v_yv_zw_x - v_yv_xw_z + v_zv_xw_z - v_zv_yw_x \\
+&= 0
+\end{align*}
+
+Note that the $z$-coordinate is the same expression as the 2D cross product: indeed, it is the value of the 2D cross product if $\vv{v}$ and $\vv{w}$ are projected onto plane $z=0$.
+
+\subsection{Mixed product and orientation}\label{ss:mixed-orient}
+A very useful combination of dot product and cross product is the \emph{mixed product}. We define the mixed product of three vectors $\vv{u}$, $\vv{v}$ and $\vv{w}$ as
+\[(\crossv{u}{v})\cdot\vv{w}\]
+
+Let $\Pi$ be the plane containing $\vv{u}$ and $\vv{v}$. We know that $\vv{n}=\crossv{u}{v}$ is perpendicular to $\Pi$, and $\dotv{n}{w}$ will be positive if the angle between $\vv{n}$ and $\vv{w}$ is less than $90\degree$. This will happen if $\vv{w}$ points to the same side of $\Pi$ as $\vv{n}$, while when $\dotv{n}{w}$ is negative $\vv{w}$ will point to the opposite side.
+
+The two cases are illustrated in the drawings below. The plane containing $\vv{u}$ and $\vv{v}$ is viewed from the side:
+\centerFig{p3-3}
+
+Note that this is similar to how the 2D cross product $\crossv{v}{w}$ tells us to which side of to line containing $\vv{v}$ vector $\vv{w}$ points. So, we similarly define an \lstinline|orient()| function based on it:
+\[\orient(P,Q,R,S) = \left(\crossv{PQ}{PR}\right)\cdot\vv{PS}\]
+It is positive if $S$ is on the side of plane $PQR$ in the direction of $\crossv{PQ}{PR}$, negative if $S$ is on the other side, and zero if $S$ is on the plane.
+
+%To simplify the discussion, we will say that $S$ is on the positive side of $PQR$ when $\orient(P,Q,R,S)>0$, and on its negative side when $\orient(P,Q,R,S)<0$.
+
+\centerFig{p3-4}
+
+This $\orient()$ function has several very nice properties. First, it stays the same if we swap any three arguments in a circular way: for example let's take $P,Q,S$, then $\orient(P,Q,R,S) = \orient(Q,S,R,P)$. On the other hand, swapping any two arguments changes its sign: for example, $\orient(P,Q,R,S) = -\orient(P,S,R,Q)$.
+
+\newcommand{\mixedPropsExoQ}{
+    Show that those properties also apply to the mixed product. For example, $(\crossv{u}{v})\cdot\vv{w} = (\crossv{v}{w})\cdot\vv{u}$ and $(\crossv{u}{v})\cdot\vv{w} = -(\crossv{u}{w})\cdot\vv{v}$.
+}
+\newcommand{\mixedPropsExoA}{
+    This can be derived from the properties of $\orient(P,Q,R,S)$ by setting $P=\vv{0}$, $Q=\vv{u}$, $R=\vv{v}$ and $S=\vv{w}$. Indeed, in this case
+    \begin{align*}
+    \orient(P,Q,R,S)
+    &= \left(\crossv{PQ}{PR}\right)\cdot\vv{PS} \\
+    &= \left[\left(\vv{u}-\vv{0}\right)\times\left(\vv{v}-\vv{0}\right)\right]\cdot\left(\vv{w}-\vv{0}\right) \\
+    &= (\crossv{u}{v})\cdot\vv{w}
+    \end{align*}
+}
+\exoWithSolution{\protect\mixedPropsExoQ}{\protect\mixedPropsExoA}{mixed-props}
+
+Earlier, we implicitly assumed that $P,Q,R$ were not collinear, but in general $\orient(P,Q,R,S)$ is zero if and only if $P,Q,R,S$ are coplanar, so when any three points are collinear it is always zero. We can also say that it is nonzero if and only if lines $PQ$ and $RS$ are skew, that is, neither intersecting nor parallel.
+
+Finally, $|\!\orient(P,Q,R,S)|$ is equal to six times the volume of tetrahedron $PQRS$.% (just like in 2D $|\orient(P,Q,R)|$ is equal to two times the area of triangle $PQR$).
+
+It is implemented by simply writing down the definition:
+\begin{lstlisting}
+T orient(p3 p, p3 q, p3 r, p3 s) {return (q-p)*(r-p)|(s-p);}
+\end{lstlisting}
+
+\newcommand{\skewExpressionExoStatement}{
+    A convenient way to check whether two lines $PQ$ and $RS$ are skew is to check whether $\left(\crossv{PQ}{RS}\right)\cdot\vv{PR} \neq 0$: in fact you can replace $PR$ by any vector going from $PQ$ to $RS$.
+
+    Using the properties of dot product, cross product and $\orient()$, prove that
+    \[\left(\crossv{PQ}{RS}\right)\cdot\vv{PR} = -\orient(P,Q,R,S)\]
+}
+\newcommand{\skewExpressionExoSol}{
+    Note that for any vectors $\vv{v}$ and $\vv{w}$ we have $(\crossv{v}{w})\cdot\vv{w} = 0$. This is because $\crossv{v}{w}$ is perpendicular to $\vv{w}$ and the dot product is zero for perpendicular vectors.
+    
+    We develop:
+    \begin{align*}
+        \left(\crossv{PQ}{RS}\right)\cdot\vv{PR}
+        &= \left(\vv{PQ}\times\left(\vv{PS}-\vv{PR}\right)\right)\cdot\vv{PR} \\
+        &= \left(\crossv{PQ}{PS} - \crossv{PQ}{PR}\right)\cdot\vv{PR} \\
+        &= \left(\crossv{PQ}{PS}\right)\cdot\vv{PR} - \left(\crossv{PQ}{PR}\right)\cdot\vv{PR} \\
+        &= \left(\crossv{PQ}{PS}\right)\cdot\vv{PR} \\
+        &= \orient(P,Q,S,R) \\
+        &= -\orient(P,Q,R,S)
+    \end{align*}
+}
+
+\exoWithSolution{\protect\skewExpressionExoStatement}{\protect\skewExpressionExoSol}{skew-expression}
+
+Let's say we have a plane $\Pi$ and a vector $\vv{n}$ perpendicular to it (a \emph{normal} to the plane).
+Then an interesting variant is to replace $\vv{PS}$ by $\vv{n}$, giving the expression
+\[\left(\crossv{PQ}{PR}\right)\cdot\vv{n}\]
+This is equivalent to computing the 2D $\orient(P',Q',R')$ on $\Pi$, where $P',Q',R'$ are the projections of $P,Q,R$ on $\Pi$.
+
+\centerFig{p3-5}
+
+\begin{lstlisting}
+T orientByNormal(p3 p, p3 q, p3 r, p3 n) {return (q-p)*(r-p)|n;}
+\end{lstlisting}

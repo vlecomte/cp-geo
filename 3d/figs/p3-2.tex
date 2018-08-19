@@ -1,0 +1,27 @@
+\newcommand{\fig}[4]{
+    \begin{tikzpicture}[scale=0.6]
+        \tkzInit[xmin=-2.5,xmax=3,#3]
+        \tkzClip
+        \tkzDefPoints{0/0/O, 2/.5/v, #1/w}
+        
+        \tkzDrawSegments[-stealth](O,v O,w)
+        \tkzDrawCircle[R, fill=white](O,.2cm)
+        #4
+        
+        \tkzLabelPoint[right](v){$\vv{v}$}
+        \tkzLabelPoint[#2](w){$\vv{w}$}
+        \tkzLabelPoint[left=.1cm](O){$\crossv{v}{w}$}
+    \end{tikzpicture}
+}%
+\begin{tabu} to .8\linewidth {X[c]X[c]}
+\fig{1/1}{above}{ymin=-.5,ymax=2}{
+    \tkzDrawCircle[R, fill=black](O,.05cm)
+}
+&
+\fig{1/-.8}{below}{ymin=-1.6,ymax=1.1}{
+    \newcommand{\rt}{.144}
+    \draw (-\rt,-\rt) -- (\rt,\rt) (-\rt,\rt) -- (\rt,-\rt);
+}
+\\
+points towards you & points away from you \\
+\end{tabu}

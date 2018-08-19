@@ -1,0 +1,12 @@
+\newcommand{\axes}{
+    \tkzDefPoints{0/0/O, 3/1/V, 1/2/W}
+    \newcommand{\start}{-1.2}
+    \draw[->, gray] (\start,0) -- (4.5,0);
+    \draw[->, gray] (0,\start) -- (0,3.5);
+}%
+\newcommand{\vw}{
+    \tkzDrawVectors(O,V O,W O,VW)
+    %\tkzDrawPoints(V,W,VW)
+    \tkzLabelSegment[below, pos=0.6](O,V){$\vv{v}$}
+    \tkzLabelSegment[left, pos=0.6](O,W){$\vv{w}$}
+}%

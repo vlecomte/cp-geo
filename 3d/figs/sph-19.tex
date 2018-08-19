@@ -1,0 +1,13 @@
+\input{tikz/sph-setup}
+\begin{tabu} to \linewidth {X[c]X[c]}
+    \figPolygonProj{lg, opacity=.8}{
+        \draw[-stealth,thick] (O') -- ++(0,.4,0) node[pos=.8,above] {$\vv{S}$};
+    }{posBack} &
+    \figPolygonProj{lg, opacity=.8}{
+        \begin{pgfonlayer}{front}
+            \draw[-stealth,thick] (O') -- ++(0,-.4,0) node[pos=.6,above] {$\vv{S}$};
+        \end{pgfonlayer}
+    }{negBack} \\
+    \lstinline|areaOnSphere()| $\approx 0.079$ & \lstinline|areaOnSphere()| $\approx 12.487$ \\
+    & \lstinline|areaOnSphere()| $-\ 4\pi \approx -0.079$ \\
+\end{tabu}

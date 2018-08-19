@@ -1,0 +1,22 @@
+\newcommand{\fig}[1]{
+    \begin{tikzpicture}[scale=0.6]
+    \tkzInit[xmin=-3,xmax=3,ymin=-2.3,ymax=3.8]
+    \tkzClip
+    \tkzDefPoints{-2/0/A, 2/0/B, #1/P}
+    
+    \tkzDrawCircle[diameter](A,B)
+    \tkzFillSector[R with nodes, color=accentBack](P,.7cm)(A,B)
+    \tkzDrawPoints(A,B,P)
+    \tkzDrawSegments(A,P B,P)
+    
+    \tkzLabelPoints[left](A)
+    \tkzLabelPoints[right](B)
+    \tkzLabelPoints[above](P)
+    \end{tikzpicture}
+}%
+\begin{tabu} to .8\linewidth {X[c]X[c]}
+\fig{-.3/1} & \fig{.2/3} \\
+%$\widehat{APB} \geq 90\degree$ & $\widehat{APB} \geq 90\degree$\\
+$\dotv{PA}{PB} \leq 0$ & $\dotv{PA}{PB} > 0$\\
+in disk & out of disk \\
+\end{tabu}

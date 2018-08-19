@@ -1,0 +1,11 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1.2]
+    \coordinate (O) at (0,0,0);
+    \coordinate (v) at (1,0,0);%(.5,1,0);
+    \coordinate (w) at (0,1,0);%(-1,1,0);
+    \coordinate (c) at (0,0,1);%(0,0,1.5);
+    \draw[-stealth] (O) -- (v) node[left] {$\vv{v}$};
+    \draw[-stealth] (O) -- (w) node[right] {$\vv{w}$};
+    \draw[-stealth] (O) -- (c) node[above] {$\crossv{v}{w}$};
+    \draw (.2,0,0) -- (.2,0,.2) -- (0,0,.2);
+    \draw (0,.2,0) -- (0,.2,.2) -- (0,0,.2);
+\end{tikzpicture}

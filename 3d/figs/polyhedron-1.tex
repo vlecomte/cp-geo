@@ -1,0 +1,13 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=.9]
+    \coordinate (P1) at (1,0,1);
+    \coordinate (P2) at (1,1,0);
+    \coordinate (P3) at (-1,1,.5);
+    \coordinate (P4) at (-1,.5,1);
+    
+    \draw[->] (-1.5,0,0) -- (2,0,0) node[below] {$x$};
+    \draw[->] (0,-1.5,0) -- (0,2,0) node[below] {$y$};
+    \draw[->] (0,0,-1.5) -- (0,0,2) node[above] {$z$};
+    
+    \fill[lg, opacity=.9] (P1) -- (P2) -- (P3) -- (P4) -- cycle;
+    \draw (P1) node[left, yshift=.1cm] {$P_1$} -- (P2) node[below] {$P_2$} -- (P3) node[right] {$P_3$} -- (P4) node[above] {$P_4$} -- cycle;
+\end{tikzpicture}

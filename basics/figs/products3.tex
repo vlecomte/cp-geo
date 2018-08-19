@@ -1,0 +1,23 @@
+\newcommand{\vw}[4]{
+    \tkzDefPoints{0/0/O, 3/1/V, #1/W}
+    \tkzDrawVectors(O,V O,W)
+    \tkzLabelSegment[#2](O,V){$\vv{v}$}
+    \tkzLabelSegment[#3](O,W){$\vv{w}$}
+    \tkzLabelAngle[pos=#4](V,O,W){$\theta$}
+}%
+\begin{tabu} to .9\linewidth {X[c]X[c]X[c]}
+    \begin{tikzpicture}[scale=0.7]
+        \vw{1/2}{below}{left}{1}
+        \tkzMarkAngle[size=.7cm, arrows=->](V,O,W)
+    \end{tikzpicture}&
+    \begin{tikzpicture}[scale=0.7]
+        \vw{-2.12/-.71}{below}{below}{-1}
+        \tkzMarkAngle[size=.7cm, arrows=->](V,O,W)
+    \end{tikzpicture}&
+    \begin{tikzpicture}[scale=0.7]
+        \vw{1/-2}{above}{left}{1}
+        \tkzMarkAngle[size=.7cm, arrows=<-](W,O,V)
+    \end{tikzpicture}\\
+    $0 < \theta < \pi$ & $\theta = \pi$ & $-\pi < \theta < 0$\\
+    $\crossv{v}{w} = 5$ & $\crossv{v}{w} = 0$ & $\crossv{v}{w} = -7$\\
+\end{tabu}

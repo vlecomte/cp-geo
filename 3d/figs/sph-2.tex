@@ -1,0 +1,33 @@
+\newcommand{\fig}[1]{%
+    \begin{tikzpicture}[tdplot_main_coords, scale=1.2]
+        \coordinate (O) at (0,0,0);
+        \drawSphere{1}{22.5}{22.5}{.4}
+        #1
+    \end{tikzpicture}
+}%
+\newcommand{\rt}{.707}
+\begin{tabu} to \linewidth {X[c]X[c]X[c]}
+    \fig{
+        \draw[semithick,dotted] (0,1,0) -- (0,1.3,0);
+        \begin{pgfonlayer}{middle}
+            \draw[thick] (-1.5,1.3,0) -- (1.5,1.3,0);
+        \end{pgfonlayer}
+    } &
+    \fig{
+        \draw[thick] (-1.5,1,0) -- (1.5,1,0);
+        \node[point] at (0,1,0) {};
+    } &
+    \fig{
+        \coordinate (A) at (-1.5,\rt,0);
+        \coordinate (B) at (-\rt,\rt,0);
+        \coordinate (C) at (\rt,\rt,0);
+        \coordinate (D) at (1.5,\rt,0);
+        \draw[thick] (A) -- (B) (C) -- (D);
+        \begin{pgfonlayer}{middle}
+            \draw[thick, gray, dashed] (B) -- (C);
+        \end{pgfonlayer}
+        \node[point] at (B) {};
+        \node[point] at (C) {};
+    } \\
+    0 intersections & 1 intersection & 2 intersections \\
+\end{tabu}

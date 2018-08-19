@@ -1,0 +1,210 @@
+\section{Lines}\label{s:lines}
+In this section we will discuss how to represent lines and a wide variety of applications.
+
+\subsection{Line representation}\label{ss:line-rep}
+Lines are sets of points $(x,y)$ in the plane which obey an equation of the form $ax+by=c$, with at least one of $a$ and $b$ nonzero. $a$ and $b$ determine the direction of the line, while $c$ determines its position.
+
+\centerFig{line0}
+
+Equation $ax+by=c$ can be interpreted geometrically through dot product: if we consider $(a,b)$ as a vector, then the equation becomes $(a,b)\cdot(x,y) = c$. This vector is perpendicular to the line, which makes sense: we saw in \ref{ss:dot} that the dot product remains constant when the second vector moves perpendicular to the first.
+
+\centerFig{line1}
+
+The way we'll represent lines in code is based on another interpretation. Let's take vector $(b,-a)$, which is parallel to the line. Then the equation becomes a cross product $(b,-a)\times(x,y) = c$. Indeed, we saw in \ref{ss:cross} that the cross product remains constant when the second vector moves parallel to the first. 
+
+\centerFig{line2}
+
+In this way, finding the equation of a line going through two points $P$ and $Q$ is easy: define the direction vector $\dir = (b,-a) = \vv{PQ}$, then find $c$ as $\dir\times P$. 
+\begin{lstlisting}
+struct line {
+    pt v; T c;
+    // From direction vector v and offset c
+    line(pt v, T c) : v(v), c(c) {}
+    // From equation ax+by=c
+    line(T a, T b, T c) : v({b,-a}), c(c) {}
+    // From points P and Q
+    line(pt p, pt q) : v(q-p), c(cross(v,p)) {}
+    
+    // Will be defined later:
+    // - these work with T = int
+    T side(pt p);
+    double dist(pt p);
+    line perpThrough(pt p);
+    bool cmpProj(pt p, pt q);
+    line translate(pt t);
+    // - these require T = double
+    void shiftLeft(double dist);
+    pt proj(pt p);
+    pt refl(pt p);
+}
+\end{lstlisting}
+
+A line will always have some implicit orientation, with two sides: the ``positive side'' of the line ($ax+by-c > 0$) is on the left of $\dir$, while the ``negative side'' ($ax+by-c < 0$) is on the right of $\dir$.
+In our implementation, this orientation is determined by the points that were used to create the line.
+We will represent it by an arrow at the end of the line. The figure below shows the differences that occur when creating a line as \lstinline|line(p,q)| or \lstinline|line(q,p)|.
+
+\centerFig{line3}
+
+\subsection{Side and distance}\label{ss:side-dist}
+One interesting operation on lines is to find the value of $ax+by-c$ for a given point $(x,y)$. For line $l$ and point $P=(x,y)$, we will denote this operation as
+\[\side_l(P) \coloneqq ax+by-c = \dir \times P - c.\]
+
+As we saw above, it can be used to determine which side of the line a certain point is, and $\side_l(P) = 0$ if and only if $P$ is on $l$ (we will use this property a few times). You may notice that $\side_{PQ}(R)$ is actually equal to $\orient(P,Q,R)$.
+
+\centerFig{line4}
+
+\begin{lstlisting}
+T side(pt p) {return cross(v,p)-c;}
+\end{lstlisting}
+
+The $\side_l(P)$ operation also gives the distance to $l$, up to a constant factor: the bigger $\side_l(P)$ is, the further from line $l$. In fact, we can prove that $|\side_l(P)|$ is $\norm{v}$ times the distance between $P$ and $l$ (this should make sense if you've read the ``mathy insight'' in section~\ref{ss:cross}).
+
+\centerFig{line5}
+
+This gives an easy implementation of distance:
+\begin{lstlisting}
+double dist(pt p) {return abs(side(p)) / abs(v);}
+\end{lstlisting}
+The squared distance can be useful to check if a point is within a certain integer distance of a line, because when using integers the result is exact if it is an integer.
+\begin{lstlisting}
+double sqDist(pt p) {return side(p)*side(p) / (double)sq(v);}
+\end{lstlisting}
+
+\subsection{Perpendicular through a point}\label{perpThrough}
+Two lines are perpendicular if and only if their direction vectors are perpendicular. Let's say we have a line $l$ of direction vector $\vv{v}$. To find a line perpendicular to line $l$ and which goes through a certain point $P$, we could define its direction vector as $\perpop(\dir)$ (that is, $\vv{v}$ rotated by $90\degree$ counter-clockwise, see section~\ref{ss:rotation}) and then try to work out $c$. However, it's simpler to just compute it as the line from $P$ to $P + \perpop(\dir)$.
+
+\centerFig{line6}
+
+\begin{lstlisting}
+line perpThrough(pt p) {return {p, p + perp(v)};}
+\end{lstlisting}
+
+\subsection{Sorting along a line}\label{ss:sort-line}
+One subtask that often needs to be done in geometry problems is, given points on a line $l$, to sort them in the order they appear on the line, following the direction of $\vv{v}$.% If the line is created as \lstinline|line(p,q)|, they should be sorted so that $P$ comes before $Q$.
+
+\centerFig{line7}
+
+
+We can use the dot product to figure out the order of two points: a point $A$ comes before a point $B$ if $\vv{v} \cdot A < \vv{v} \cdot B$. So we can a comparator out of it.
+\begin{lstlisting}
+bool cmpProj(pt p, pt q) {
+    return dot(v,p) < dot(v,q);
+}
+\end{lstlisting}
+In fact, this comparator is more powerful than we need: it is not limited to points on $l$ and can compare two points by their orthogonal projection\footnote{If you don't know what an orthogonal projection is, read section~\ref{ss:proj-refl}.} on $l$. This should make sense if you have read the ``mathy insight'' in section~\ref{ss:dot}.
+
+\subsection{Translating a line}
+If we want to translate a line $l$ by vector $\vv{t}$, the direction vector $\dir$ remains the same but we have to adapt $c$.
+
+\centerFig{line8}
+
+To find its new value $c'$, we can see that for some point $P$ on $l$, then $P+\vv{t}$ must be on the translated line. So we have
+\begin{align*}
+\side_l(P) &= \vv{v} \times P - c = 0\\
+\side_{l'}\left(P + \vv{t}\right) &= \vv{v} \times \left(P + \vv{t}\right) - c' = 0
+\end{align*}
+which allows us to find $c'$:
+\[c' = \dir \times (P+\vv{t}) = \dir\times P + \dir\times\vv{t} = c + \dir\times\vv{t}\]
+\begin{lstlisting}
+line translate(pt t) {return {v, c + cross(v,t)};}
+\end{lstlisting}
+
+A closely related task is shifting line $l$ to the left by a certain distance $\delta$ (or to the right by $-\delta$).
+
+\centerFig{line9}
+
+This is equivalent to translating by a vector of norm $\delta$ perpendicular to the line, which we can compute as
+\[\vv{t} = (\delta/\norm{\dir})\perpop(\dir)\]
+so in this case $c'$ becomes
+\begin{align*}
+c' &= c + \dir\times\vv{t}\\
+&= c + (\delta/\norm{\dir})(\dir\times\perpop(\dir))\\
+&= c + (\delta/\norm{\dir})\norm{\dir}^2\\
+&= c + \delta\norm{\dir}
+\end{align*}
+
+\begin{lstlisting}
+line shiftLeft(double dist) {return {v, c + dist*abs(v)};}
+\end{lstlisting}
+
+\subsection{Line intersection}\label{line-line}
+There is a unique intersection point between two lines $l_1$ and $l_2$ if and only if $\dirof{l_1} \times \dirof{l_2} \neq 0$. If it exists, we will show that it is equal to
+\[P = \frac{c_{l_1}\dirof{l_2} - c_{l_2}\dirof{l_1}}{\dirof{l_1} \times \dirof{l_2}}\]
+
+\centerFig{line10}
+
+We only show that it lies on $l_1$ (it should be easy to see that the expression is actually symmetric in $l_1$ and $l_2$). It suffices to see that $\side_{l_1}(P) = 0$:
+\begin{align*}
+\side_{l_1}(P) &= \dirof{l_1} \times \left(\frac{c_{l_1}\dirof{l_2} - c_{l_2}\dirof{l_1}}{\dirof{l_1} \times \dirof{l_2}}\right)-c_{l_1} \\
+&=\frac{c_{l_1}(\dirof{l_1}\times\dirof{l_2}) - c_{l_2}(\dirof{l_1}\times\dirof{l_1}) - c_{l_1}(\dirof{l_1}\times\dirof{l_2})}{\dirof{l_1} \times \dirof{l_2}} \\
+&=\frac{-c_{l_2}(\dirof{l_1}\times\dirof{l_1})}{\dirof{l_1} \times \dirof{l_2}} \\
+&=0
+\end{align*}
+
+\begin{lstlisting}
+bool inter(line l1, line l2, pt &out) {
+    T d = cross(l1.v, l2.v);
+    if (d == 0) return false;
+    out = (l2.v*l1.c - l1.v*l2.c) / d; // requires floating-point coordinates
+    return true;
+}
+\end{lstlisting}
+
+\subsection{Orthogonal projection and reflection}\label{ss:proj-refl}
+The orthogonal projection of a point $P$ on a line $l$ is the point on $l$ that is closest to $P$. The reflection of point $P$ by line $l$ is the point on the other side of $l$ that is at the same distance and has the same orthogonal projection.
+
+\centerFig{line11}
+
+To compute the orthogonal projection of $P$, we need to move $P$ perpendicularly to $l$ until it is on the line.
+%, that is, until we reach some point $P'$ such that $\side_l(P')=0$.
+In other words, we need to find the factor $k$ such that $\side_l(P+k\perpop(\dir)) = 0$.
+
+We compute
+\begin{align*}
+\side_l(P + k\perpop(\dir))
+&= \dir \times (P + k\perpop(\dir)) - c\\
+&= \dir \times P + \dir \times k\perpop(\dir) - c\\
+&= (\dir \times P - c) + k (\dir \times \perpop(\dir))\\
+&= \side_l(P) + k \norm{\dir}^2
+\end{align*}
+so we find $k = -\side_l(P) / \norm{\dir}^2$.
+\begin{lstlisting}
+pt proj(pt p) {return p - perp(v)*side(p)/sq(v);}
+\end{lstlisting}
+
+To find the reflection, we need to move $P$ in the same direction but twice the distance:
+\begin{lstlisting}
+pt refl(pt p) {return p - perp(v)*2*side(p)/sq(v);}
+\end{lstlisting}
+
+\subsection{Angle bisectors}
+An angle bisector of two (non-parallel) lines $l_1$ and $l_2$ is a line that forms equal angles with $l_1$ and $l_2$. We define the \term{internal bisector} $\lint$ as the line whose direction vector points between the direction vectors of $l_1$ and $l_2$, and the \term{external bisector} $\lext$ as the other one. They are shown in the figure below.
+
+\centerFig{line12}
+
+
+An important property of bisectors is that their points are at equal distances from the original lines $l_1$ and $l_2$. In fact, if we give a sign to the distance depending on which side of the line we are on, we can say that $\lint$ is the line whose points are at opposite distances from $l_1$ and $l_2$ while $\lext$ is the line whose points are at equal distances from $l_1$ and $l_2$.
+
+For some line $l$ can compute this signed distance as $\side_l(P)/\normv{v}$ (in section~\ref{ss:side-dist} we used the absolute value of this to compute the distance). So $\lint$ should be the line of all points for which
+\begin{align*}
+&\frac{\side_{l_1}(P)}{\norm{\dirof{l_1}}} = -\frac{\side_{l_2}(P)}{\norm{\dirof{l_2}}}\\[.3cm]
+\Leftrightarrow\quad &\frac{\dirof{l_1}\times P - c_{l_1}}{\norm{\dirof{l_1}}} = - \frac{\dirof{l_2}\times P - c_{l_2}}{\norm{\dirof{l_2}}}\\[.3cm]
+\Leftrightarrow\quad &\left(\frac{\dirof{l_1}}{\norm{\dirof{l_1}}} + \frac{\dirof{l_2}}{\norm{\dirof{l_2}}}\right) \times P
+- \left(\frac{c_{l_1}}{\norm{\dirof{l_1}}} + \frac{c_{l_2}}{\norm{\dirof{l_2}}}\right) = 0
+\end{align*}
+
+This is exactly an expression of the form $\side_l(P) = \vv{v} \times P - c = 0$ which defines the points on a line. So it means that we have found the $\vv{v}$ and $c$ that characterize $\lint$:
+\begin{align*}
+\vv{v} &= \frac{\dirof{l_1}}{\norm{\dirof{l_1}}} + \frac{\dirof{l_2}}{\norm{\dirof{l_2}}}\\[.2cm]
+c &= \frac{c_{l_1}}{\norm{\dirof{l_1}}} + \frac{c_{l_2}}{\norm{\dirof{l_2}}}
+\end{align*}
+
+The reasoning is very similar for $\lext$, the only difference being signs. Both can be implemented as follows.
+\begin{lstlisting}
+line bisector(line l1, line l2, bool interior) {
+    assert(cross(l1.v, l2.v) != 0); // l1 and l2 cannot be parallel!
+    double sign = interior ? 1 : -1;
+    return {l2.v/abs(l2.v) + l1.v/abs(l1.v) * sign,
+            l2.c/abs(l2.v) + l1.c/abs(l1.v) * sign};
+}
+\end{lstlisting}

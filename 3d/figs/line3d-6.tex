@@ -1,0 +1,31 @@
+\newcommand{\fig}[1]{
+    \begin{tikzpicture}[tdplot_main_coords, scale=.85]
+        \drawGrid{-1}{2}{-1}{2}
+        #1
+    \end{tikzpicture}
+}
+\begin{tabu} to \linewidth {X[c]X[c]X[c]}
+    \fig{
+        \coordinate (A) at (0,0,0);
+        \coordinate (B) at (0,1,0);
+        \foreach \p in {A,B} {
+            \draw (\p) ++(0,0,-2) -- ++(0,0,4);
+        }
+        \draw[dashed] (A) -- (B);
+        \draw (A) -- ++(0,0,.2) -- ++(0,.2,0) -- ++(0,0,-.2) -- cycle;
+        \draw (B) -- ++(0,0,.2) -- ++(0,-.2,0) -- ++(0,0,-.2) -- cycle;
+    } &
+    \fig{
+        \draw (0,0,-2) -- ++(0,0,4) (0,-1.5) -- ++(0,4,0);
+        \node[point] at (0,0,0) {};
+    } &
+    \fig{
+        \coordinate (A) at (0,0,0);
+        \coordinate (B) at (0,1,0);
+        \draw (A) ++(0,0,-2) -- ++(0,0,4) (-1.5,1,0) -- ++(4,0,0);
+        \draw[dashed] (A) -- (B);
+        \draw (A) -- ++(0,0,.2) -- ++(0,.2,0) -- ++(0,0,-.2) -- cycle;
+        \draw (B) -- ++(0,-.2,0) -- ++(-.2,0,0) -- ++(0,.2,0) -- cycle;
+    } \\
+    parallel & intersecting & skew \\
+\end{tabu}

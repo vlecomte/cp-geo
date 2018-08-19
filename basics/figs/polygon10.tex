@@ -1,0 +1,26 @@
+\newcommand{\drawTo}[4]{
+    \begin{tikzpicture}[scale=0.7]
+    \coordinate (o) at (0,0);
+    \coordinate (d) at (2,1);
+    \coordinate (d') at #1;
+    #2
+    \draw (o) -- (d);
+    \draw (o) -- (d');
+    \node[point, label=right:{$D$}] (D) at (d) {};
+    \node[point, label=#3:{$D'$}] (D') at (d') {};
+    \node[point, label=#4:{$O$}] (O) at (o) {};
+    \end{tikzpicture}
+}%
+\begin{myc}
+    \drawTo{(-2,0)}{\pic[draw, ->, angle radius=.5cm] {angle=d--o--d'};}{left}{below}
+    
+    $D'$ left of $D$\\
+    $\Rightarrow$ increase
+\end{myc}
+\qquad
+\begin{myc}
+    \drawTo{(1.5,-1)}{\pic[draw, <-, angle radius=.5cm] {angle=d'--o--d};}{right}{left}
+    
+    $D'$ right of $D$\\
+    $\Rightarrow$ decrease
+\end{myc}

@@ -1,0 +1,21 @@
+\newcommand{\fig}[2]{
+    \begin{tikzpicture}
+        \tkzInit[xmin=-2.1,xmax=2.1,ymin=-1.5,ymax=1.5]
+        \tkzClip
+        
+        \tkzDefPoints{0/0/O, 1.6/.8/B, #1/w, -.5/1/n}
+        \tkzDefPointsBy[symmetry = center O](B){A}
+        \tkzLabelSegment[sloped,below,gray](A,B){plane of $\vv{u}$ and $\vv{v}$}
+        \tkzDrawSegments[-stealth](O,n O,w)
+        \tkzDrawSegments(A,B)
+        \tkzMarkRightAngle(A,O,n)
+        
+        \tkzLabelPoint[left](n){$\vv{n}$}
+        \tkzLabelPoint[#2](w){$\vv{w}$}
+    \end{tikzpicture}
+}%
+\begin{tabu} to .9\linewidth {X[c]X[c]}
+\fig{.8/.9}{above} &
+\fig{1.2/-.6}{right} \\
+$(\crossv{u}{v})\cdot\vv{w} > 0$ & $(\crossv{u}{v})\cdot\vv{w} < 0$ \\
+\end{tabu}

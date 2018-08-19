@@ -1,0 +1,14 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=.85]
+    \coordinate (O) at (0,0,0);
+    \coordinate (A) at (1,0,0);
+    \coordinate (B) at (0,1,0);
+    \draw[dashed] (B) ++(0,-1,-2) -- ++(0,1,2);
+    \fill[lg, opacity=.9] (O) ++(-1,-1,0) -- ++(3,0,0) -- ++(0,3,0) -- ++(-3,0,0) -- cycle;
+    \coordinate (B) at (0,1,0);
+    \tdplotdefinepoints(0,1,0)(0,2,2)(0,1,2)
+    \tdplotdrawpolytopearc[semithick]{1}{above,xshift=.1cm}{$\theta$}
+    \draw[gray,dashed,semithick] (B) -- ++(0,0,2);
+    \draw (B) -- ++(0,1,2);
+    \draw[-stealth] (1,0,0) -- ++(0,0,1) node[pos=.5,right] {$\vv{n}$};
+    \draw[-stealth] (B) ++(0,.5,0) ++(0,.25,.5) -- ++(0,.5,1) node[pos=.5,right,yshift=-.1cm] {$\vv{d}$};
+\end{tikzpicture}

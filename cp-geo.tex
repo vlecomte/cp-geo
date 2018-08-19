@@ -1,0 +1,31 @@
+\documentclass[a4paper,11pt]{report}
+
+\usepackage[utf8]{inputenc}
+\input{preamble}
+\title{Handbook of geometry for competitive programmers}
+\author{Victor Lecomte}
+\date{Draft \today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\Opensolutionfile{solutions}
+\input{precision/ch-precision.tex}
+\input{basics/ch-basics.tex}
+\input{3d/ch-3d.tex}
+\Closesolutionfile{solutions}
+\appendix
+\chapter{Solutions to the exercises}
+\input{solutions.tex}
+\input{proofs.tex}
+
+%\part{Problem-solving methods}
+%\chapter{Precision issues and epsilons}
+%\chapter{Limiting casework}
+%\chapter{Discretizing the problem}
+% e.g. finding a set of candidate points to pass through and solve the resulting shortest path problem
+
+\printbibliography
+
+\end{document}

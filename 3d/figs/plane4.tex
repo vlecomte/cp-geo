@@ -1,0 +1,17 @@
+\newcommand{\fig}[2]{
+    \begin{tikzpicture}[tdplot_main_coords, scale=1.2]
+        \coordinate (P) at (0,0,1);
+        \coordinate (O) at (0,0,0);
+        #1
+        \fill[lg, opacity=.8] (O) ++(1,1,0) -- ++(-2,0,0) -- ++(0,-2,0) -- ++(2,0,0) -- cycle;
+        \draw[dashed] (P) -- (O);
+        \node[point,label=above:{$P$}] at (P) {};
+        \node[cross] at (O) {};
+        #2
+    \end{tikzpicture}
+}%
+\begin{tabu} to .8\linewidth {X[c]X[c]}
+\fig{}{\node[right] at (0,0,0) {$P'$};} &
+\fig{\draw[dashed] (O) -- (0,0,-1) node[point,label=right:{$P'$}] {};}{} \\
+projection & reflection \\
+\end{tabu}

@@ -1,0 +1,11 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1.2]
+    \coordinate (O) at (0,0,0);
+    \coordinate (P) at (1,-1,0);
+    \drawGrid{-2}{2}{-2}{2}
+    \node[point, label=below right:{$O$}] at (O) {};
+    \node[point, label=left:{$P$}] at (P) {};
+    \draw[-stealth] (O) -- (P) node[pos=.5,above] {$\vv{OP}$};
+    \draw (-2.5,0,0) -- (2.5,0,0);
+    \draw[-stealth] (0,1,0) -- ++(-1,0,0) node[pos=.5,below right] {$\vv{d}$};
+    \draw[-stealth] (O) -- ++(0,0,1) node[above] {$\crossv{d}{OP}$};
+\end{tikzpicture}

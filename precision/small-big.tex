@@ -1,0 +1,30 @@
+\section{Small imprecisions can become big imprecisions}
+In this section we explore two ways in which very small starting imprecisions can become very large imprecisions in the final output of a program.
+
+\subsection{When doing numerically unstable computations}\label{ss:numerically-unstable}
+There are some types of computations which can transform small imprecisions into catastrophically large ones, and line intersection is one of them. Imagine you have four points $A,B,C,D$ which were obtained through an previous imprecise process (for example, their position can vary by a distance of at most $r = 10^{-6}$), and you have to compute the intersection of lines $AB$ and $CD$.
+
+For illustration, we represent the imprecisions on the points with small disk of radius $r$: the exact position is the black dot, while the small gray disk contains the positions it could take because of imprecisions. The dashed circle gives an idea of where point $I$ might lie.
+
+In the best case, when $A,B$ and $C,D$ aren't too close together, and not too far from the intersection point $I$, then the imprecision on $I$ isn't too big.
+
+\centerFig{small-big0}
+
+But if those conditions are not respected, the intersection $I$ might vary in a very wide range or even fail to exist, if given the imprecision lines $AB$ and $CD$ end up being parallel, or if $A$ and $B$ (or $C$ and $D$) end up coinciding.
+
+\centerFig{small-big1}
+    
+This shows that finding the intersection of two lines defined by imprecise points is a task that is inherently problematic for floating-point arithmetic, as it can produce wildly incorrect results even if the starting imprecision is quite small.
+
+\subsection{With large values and accumulation}\label{ss:accumulation}
+
+Another way in which small imprecisions can become big is by accumulation. Problem ``Keeping the Dogs Apart'', which we treat in more detail in a case study in section~\ref{ss:dogs}, is a very good example of this. In this problem, two dogs run along two polylines at equal speed and you have to find out the minimum distance between them at any point in time.
+
+Even though the problem seems quite easy and the computations do not have anything dangerous for precision (mostly just additions, subtractions and distance computations), it turns out to be a huge precision trap, at least in the most direct implementation.
+
+Let's say we maintain the current distance from the start for both dogs. There are $10^5$ polyline segments of length up to $\sqrt{2}\times 10^4$, so this distance can reach $\sqrt{2}\times 10^9$. Besides, to compute the sum, we perform $10^5$ sum operations which can all bring a $2^{-53} \approx 1.11 \times 10^{-16}$ relative error if we're using \lstinline|double|. So in fact the error might reach
+\[\left(\sqrt{2}\times 10^9\right) \times 10^5 \times 2^{-53} \approx 0.016\]
+
+Although this is a theoretical computation, the error does actually get quite close to this in practice, and since the tolerance on the answer is $10^{-4}$ this method actually gives a WA verdict.
+
+This shows that even when only very small precision mistakes are made ($\approx 1.11 \times 10^{-16}$), the overal loss of precision can get very big, and carefully checking the maximal imprecision of your program is very important.

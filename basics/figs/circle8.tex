@@ -1,0 +1,28 @@
+\input{tikz/circle-setup}
+\begin{tikzpicture}
+\tangents{4}{2.7}{1}
+\tkzDefPointBy[projection=onto C1--J1](C2) \tkzGetPoint{P}
+\tkzDefPoint(5.5,1.5){v1}
+\tkzDefPointBy[translation=from C2 to J2](v1) \tkzGetPoint{v2}
+
+\tkzDrawCircle[color=gray](C1,I1)
+\tkzDrawCircle[color=gray](C2,I2)
+\tkzMarkRightAngle(C1,J1,J2)
+\tkzMarkRightAngle(C2,J2,J1)
+\tkzMarkRightAngle(C2,P,C1)
+\tkzMarkAngle[size=0.4cm](C2,C1,J1)
+\tkzDrawSegment[add=0.5 and 0.5](J1,J2)
+\tkzDrawSegments(C1,J1 C2,J2 C1,C2 P,C2)
+\tkzDrawPoints(C1,C2,J1,J2)
+\tkzDrawSegment[->](v1,v2)
+
+\tkzLabelPoint[below](C1){$O_1$}
+\tkzLabelPoint[below](C2){$O_2$}
+\tkzLabelPoint[above](J1){$P_1$}
+\tkzLabelPoint[above](J2){$P_2$}
+\tkzLabelSegment[sloped, above](C1,P){$r_1-r_2$}
+\tkzLabelSegment[below](C1,C2){$d$}
+\tkzLabelSegment[above, pos=0.45](P,C2){$h$}
+\tkzLabelAngle[pos=0.6](C2,C1,J1){$\alpha$}
+\tkzLabelSegment[sloped, above](v1,v2){$\vv{v}$}
+\end{tikzpicture}

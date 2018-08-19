@@ -1,0 +1,7 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1.2]
+    \coordinate (O) at (0,0,0);
+    \drawGrid{-2}{2}{-2}{2}
+    \node[point, label=above left:{$O$}] at (O) {};
+    \draw (-2.5,0,0) -- (2.5,0,0);
+    \draw[-stealth] (0,1,0) -- ++(-1,0,0) node[pos=.5,below right] {$\vv{d}$};
+\end{tikzpicture}

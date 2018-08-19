@@ -1,0 +1,20 @@
+\newcommand{\fs}[2]{%{color}{list of A/B/C}
+    \foreach \A/\B/\C in {#2} {
+        \tkzFillSector[R with nodes, color=#1](\B,.5cm)(\C,\A)
+    }
+}%
+\begin{tabu} to .7\textwidth {X[c]X[c]}
+    \begin{tikzpicture}[scale=0.7]
+    \tkzDefPoints{0/0/A, 3/-.5/B, 2/1/C, 3.5/3/D, 1.5/2/E, 0/3/F}
+    \fs{posBack}{F/A/B, A/B/C, C/D/E, E/F/A}
+    \fs{negBack}{D/C/B, F/E/D}
+    \tkzDrawPolygon(A,B,C,D,E,F)
+    \end{tikzpicture}&
+    \begin{tikzpicture}[scale=0.7]
+    \tkzDefPoints{0/1/A, 2.5/0/B, 3.5/2.5/C, 1.5/3/D, 0/2.5/E}
+    \fs{posBack}{A/B/C, B/C/D, C/D/E, D/E/A, E/A/B}
+    \tkzDrawPolygon(A,B,C,D,E)
+    \end{tikzpicture}\\
+    different signs & all the same sign \\
+    $\Rightarrow$ not convex & $\Rightarrow$ convex\\
+\end{tabu}

@@ -1,0 +1,11 @@
+\begin{tikzpicture}[scale=0.7]
+\tkzDefPoints{0/-.5/A, 4/2/B, -.5/1/C, 4/0/D}
+\tkzInterLL(A,B)(C,D) \tkzGetPoint{P}
+
+\tkzDrawSegments[->](A,B C,D)
+\tkzDrawPoint(P)
+
+\tkzLabelSegment[pos=.8, above](A,B){$l_1$}
+\tkzLabelSegment[pos=.8, below](C,D){$l_2$}
+\tkzLabelPoints[above](P)
+\end{tikzpicture}

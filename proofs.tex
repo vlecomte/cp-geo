@@ -1,0 +1,106 @@
+\chapter{Omitted proofs}
+\section{Precision bounds for $+,-,\times$}\label{sec:proof-precision}
+
+We first formulate an assumption on the rounding operation $\round()$. In this section, $M$ and $\epsilon$ are positive real constants.
+\begin{assum}
+The rounding of a value $x$ has a relative error of at most $\epsilon$. Therefore, if $|x| \leq M^d$, as we will always assume of a $d$-dimensional value, then
+\[|\round(x)-x| \leq M^d\epsilon\]
+\end{assum}
+
+To give a solid formalism to our notions of $d$-dimensional values and ``computed in $n$ operations'', we introduce the following recursive definition.
+\begin{mydef}\label{def:valid-computation}
+A quadruplets $(x,x',d,n)$ is a \emph{valid computation} if $|x| \leq M^d$ and one of these holds:
+\begin{enumerate}[label={(\alph*)}]
+\item $x = x'$, $n=0$;
+\item $(a,a',d_a,n_a)$ and $(b,b',d_b,n_b)$ are valid computations, $n = n_a+n_b+1$ and either:
+    \begin{enumerate}[label={(\roman*)}]
+    \item $d=d_a=d_b$, $x=a+b$, $x'=\round(a'+b')$ and $|a'+b'| \leq M^d$;
+    \item $d=d_a=d_b$, $x=a-b$, $x'=\round(a'-b')$ and $|a'-b'| \leq M^d$;
+    \item $d=d_a+d_b$, $x=ab$, $x'=\round(a'b')$ and $|a'b'| \leq M^d$.
+    \end{enumerate}
+\end{enumerate}
+\end{mydef}
+
+Note that valid computations are strongly limited by the assumptions we place on the magnitude of the results, both theoretical and actual.
+
+{
+    \newcommand{\f}[1]{(1+\epsilon)^{#1}-1}
+    \newcommand{\mdfn}[2]{M^{#1}\left(\f{#2}\right)}
+
+    \begin{thm}\label{thm:precision}
+    If $(x,x',d,n)$ is a valid computation, then \[|x'-x| \leq \mdfn{d}{n}.\]
+    \end{thm}
+
+    We will prove the theorem by induction on the structure of valid computations. We will separate the proof into two lemmas: first addition and subtraction together in Lemma~\ref{lemma:precision-add}, then multiplication in Lemma~\ref{lemma:precision-mult}.
+
+    \begin{lemma}\label{lemma:fplusf}
+    Let $f(x) = \f{x}$. If $a,b>0$, then $f(a) + f(b) \leq f(a+b)$.
+    \end{lemma}
+    \begin{proof}
+    Clearly, $f$ is convex. From convexity we find
+    \begin{align*}
+    f(a) &\leq \frac{b}{a+b}\,f(0) + \frac{a}{a+b}\,f(a+b)\\
+    f(b) &\leq \frac{a}{a+b}\,f(0) + \frac{b}{a+b}\,f(a+b).\\
+    \end{align*}
+    Therefore, $f(a) + f(b) \leq f(0) + f(a+b) = f(a+b)$.
+    \end{proof}
+
+    \begin{lemma}[addition and subtraction]\label{lemma:precision-add}
+    Let operator $\ast$ be either $+$ or $-$.
+    If $(a,a',d,n_a)$ and $(b,b',d,n_b)$ are two valid computations for which Theorem~\ref{thm:precision} holds and $(a\ast b,\round(a'\ast b'),d,n_a+n_b+1)$ is a valid computation, then Theorem~\ref{thm:precision} holds for it as well.
+    \end{lemma}
+    \begin{proof}
+    From the hypotheses know that
+    \begin{align*}
+    |a'-a| &\leq \mdfn{d}{n_a}\\
+    |b'-b| &\leq \mdfn{d}{n_b}\\
+    |a' \ast b'| &\leq M^d.
+    \end{align*}
+    We find
+    \begin{align*}
+    |\round(a'&\ast b') - (a \ast b)| \\
+    &= |(\round(a'\ast b') - (a'\ast b')) + ((a'\ast b') - (a\ast b))| \\
+    &\leq |\round(a'\ast b') - (a'\ast b')| + |(a'-a) \ast (b'-b)| \\
+    &\leq M^d\epsilon + |a'-a| + |b'-b| \\
+    &\leq M^d\epsilon + \mdfn{d}{n_a} + \mdfn{d}{n_b} \\
+    &= M^d\left[f(1) + f(n_a) + f(n_b)\right] \\
+    &\leq M^d\,f(n_a+n_b+1)\\
+    &= \mdfn{d}{n_a+n_b+1}
+    \end{align*}
+    where the step before last follows from two applications of Lemma~\ref{lemma:fplusf}.
+    \end{proof}
+    
+    \begin{lemma}[multiplication]\label{lemma:precision-mult}
+    If $(a,a',d_a,n_a)$ and $(b,b',d_b,n_b)$ are two valid computations for which Theorem~\ref{thm:precision} holds and $(ab,\round(a'b'),d_a+d_b,n_a+n_b+1)$ is a valid computation, then Theorem~\ref{thm:precision} holds for it as well.
+    \end{lemma}
+    \begin{proof}
+    From the hypotheses we know that
+    \begin{align*}
+    |a| &\leq M^d\\
+    |b| &\leq M^d\\
+    |a'-a| &\leq \mdfn{d_a}{n_a}\\
+    |b'-b| &\leq \mdfn{d_a}{n_b}\\
+    |a'b'| &\leq M^{d_a+d_b}.
+    \end{align*}
+    We find
+    \begin{align*}
+    |\round(&a'b') - ab)|\\
+    =\ &|(\round(a'b') - a'b') + (a'b'-ab)|\\
+    \leq\ &|\round(a'b') - a'b'| + |(a'-a)b + (b'-b)a + (a'-a)(b'-b)|\\
+    \leq\ &M^{d_a+d_b}\epsilon + |a'-a||b| + |b'-b||a| + |a'-a||b'-b|\\
+    \leq\ &M^{d_a+d_b}\epsilon + \mdfn{d_a}{n_a}M^{d_b} + \mdfn{d_b}{n_b}M^{d_a}\\
+    &\qquad + \mdfn{d_a}{n_a}\mdfn{d_b}{n_b}\\
+    =\ &M^{d_a+d_b}\big[\epsilon + \left(\f{n_a}\right) + \left(\f{n_b}\right)\\
+    &\qquad + \left(\f{n_a}\right)\left(\f{n_b}\right)\big]\\
+    =\ &M^{d_a+d_b}\left[\epsilon + \f{n_a+n_b}\right]\\
+    =\ &M^{d_a+d_b}\left[f(1) + f(n_a+n_b)\right]\\
+    \leq\ &M^{d_a+d_b}\,f(n_a+n_b+1)\\
+    =\ &\mdfn{d_a+d_b}{n_a+n_b+1}
+    \end{align*}
+    where the step before last follows from Lemma~\ref{lemma:fplusf}.
+    \end{proof}
+    
+    \begin{proof}[Proof of Theorem~\ref{thm:precision}]
+    By induction on the recursive structure of valid computations (see Definition~\ref{def:valid-computation}). Case (a) is trivial because $|x'-x| = 0$. For case (b), the inductive step for (i) and (ii) follows from Lemma~\ref{lemma:precision-add} while that of (iii) follows from Lemma~\ref{lemma:precision-mult}.
+    \end{proof}
+}

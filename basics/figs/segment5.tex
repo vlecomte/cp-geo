@@ -1,0 +1,19 @@
+\newcommand{\fig}[2]{
+    \begin{tikzpicture}[scale=0.7]
+    \tkzDefPoints{#1}
+    \tkzDefPointBy[projection = onto C--D](B) \tkzGetPoint{B'}
+
+    \tkzDrawSegment[gray, dashed](B,#2)
+    \tkzDrawSegments(A,B C,D)
+    \tkzDrawPoints(A,B,C,D)
+
+    \tkzLabelPoints[left](A,C)
+    \tkzLabelPoints[right](B,D)
+    \end{tikzpicture}
+}%
+\begin{tabu} to .9\linewidth {X[c]X[c]X[c]}
+\fig{0/0/A, 3/1/B, .5/1.5/C, 2/0/D}{B} &
+\fig{0/0/A, 1.5/-.5/B, 2/-1.5/C, 3.5/-1/D}{C} &
+\fig{0/0/A, 1.5/-.5/B, 1/-1.5/C, 3/-.5/D}{B'} \\
+proper intersection & between points & between point and line \\
+\end{tabu}

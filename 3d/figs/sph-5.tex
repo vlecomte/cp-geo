@@ -1,0 +1,12 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1.6]
+    \coordinate (O) at (0,0,0);
+    \drawSphere{1}{22.5}{22.5}{.4}
+    \coordinate (P) at (1,1,0);
+    \coordinate (Q) at (0,1,1);
+    \tdplotdefinepoints(0,0,0)(1,1,0)(0,1,1)
+    \tdplotdrawpolytopearc[thick]{1}{}{}
+    \draw[dotted,semithick] (P) -- (0.707,0.707,0.000);
+    \draw[dotted,semithick] (Q) -- (0.000,0.707,0.707);
+    \node[point,label=right:{$A$}] at (P) {};
+    \node[point,label=right:{$B$}] at (Q) {};
+\end{tikzpicture}

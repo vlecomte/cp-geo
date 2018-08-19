@@ -1,0 +1,14 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=.9]
+    \coordinate (P1) at (0,0,0);
+    \coordinate (P2) at (0,2,0);
+    \coordinate (P3) at (-2,1,0);
+    \coordinate (C) at (-.667,1,0);
+    
+    \fill[lg, opacity=.9] (P1) -- (P2) -- (P3) -- cycle;
+    \node[left,yshift=.1cm] at (P1) {$A$};
+    \node[right] at (P2) {$B$};
+    \node[above] at (P3) {$C$};
+    \draw[-stealth] (P1) -- (P2);
+    \draw[-stealth] (P1) -- (P3);
+    \draw[-stealth] (C) -- ++(0,0,2) node[left,pos=.7] {$\crossv{AB}{AC}$};
+\end{tikzpicture}

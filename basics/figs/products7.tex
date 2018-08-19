@@ -1,0 +1,17 @@
+\input{tikz/products-setup}
+\newcommand{\fig}[2]{
+    \begin{tikzpicture}[scale=0.4]
+    \tkzInit[xmin=-2,xmax=6,ymin=-1,ymax=4.2]
+    \tkzClip
+    \abcProducts{3/1}{1/2}{B}{C}{posBack}
+    \tkzDefPoints{#1/X}
+    \tkzDrawPoint(X)
+    \tkzLabelPoints[#2](X)
+    \end{tikzpicture}
+}%
+\begin{tabu} to .9\textwidth {X[c]X[c]X[c]}
+\fig{-0.5/3}{left} & \fig{4/-0.5}{right} & \fig{2/2}{above right} \\
+$\orient(A,B,X) \geq 0$ & \textKO{$\orient(A,B,X) < 0$} & $\orient(A,B,X) \geq 0$ \\
+\textKO{$\orient(A,C,X) > 0$} & $\orient(A,C,X) \leq 0$ & $\orient(A,C,X) \leq 0$ \\
+\KO & \KO & \OK \\
+\end{tabu}

@@ -1,0 +1,133 @@
+\subsection{Great-circle distance}
+The shortest distance between two points $A$ and $B$ on a sphere $(O,r)$ is given by travelling along plane $OAB$. It is called the \emph{great-circle distance} because it follows the circumference of one of the big circles of radius $r$ that split the sphere in two.
+
+\centerFig{sph-4}
+
+So computing the distance between $A$ and $B$ amounts to finding the length of the circle arc joining them. This arc is subtended by angle $\theta$, the angle between $\vv{OA}$ and $\vv{OB}$, so its length is simply $r\theta$.
+\begin{lstlisting}
+double greatCircleDist(p3 o, double r, p3 a, p3 b) {
+    return r * angle(a-o, b-o);
+}
+\end{lstlisting}
+
+This code also works if $A$ and $B$ are not actually on the sphere, in which case it will give the distance between their projections on the sphere:
+
+\centerFig{sph-5}
+
+Note that in most 2D projections this great-circle path is not a straight line, and it tends to bend northward in the Northern Hemisphere, and southward in the Southern Hemisphere. This is why, for example, flights going from London to Los Angeles fly over Greenland, although it is much further North than both cities.
+
+\centerFig{sph-6}
+
+\subsection{Spherical segment intersection}
+For points $A$ and $B$ on a sphere, we define spherical segment $[AB]$ as the path drawn by the great-circle distance between $A$ and $B$ on the sphere. This is not well-defined if $A$ and $B$ are directly opposite each other on the sphere, because there would be many possible shortest paths.
+
+From simplicity, we assume that the sphere is centered at the origin. 
+We will call a segment $[AB]$ \emph{valid} if $A$ and $B$ are not opposite each other on the sphere, or in other words, if their directions as vectors are not directly opposite each other. Note that this definition accepts segments where $A=B$.
+\begin{lstlisting}
+bool validSegment(p3 a, p3 b) {
+    return a*b != zero || (a|b) > 0;
+}
+\end{lstlisting}
+
+Given two spherical segments $[AB]$ and $[CD]$, we would like to figure out if they intersect, and what their intersection is. This is part of a more general problem: given two segments $[AB]$ and $[CD]$ in space, if we view them from an observation point $O$, does one of them hide part of the other, that is, is there a ray from $O$ that touches them both?
+
+\begin{center}
+    \begin{tabu} to .9\linewidth {X[c]X[c]}
+        \includeFig{sph-7} & \includeFig{sph-8} \\
+        common point on sphere & common ray from $O$ \\
+    \end{tabu}
+\end{center}
+
+We will solve the general problem, and make sure that our answer is always exact when points $A,B,C,D$ are integer points. To do this, we will separate cases just like we did for 2D segment intersection in section~\ref{ss:seg-seg-inter}:
+\begin{enumerate}
+\item Segments $[AB]$ and $[CD]$ intersect \term{properly}, that is, their intersection is one single point which is not an endpoint of either segment. For the general problem this means that there is a single ray from $O$ that touches both $[AB]$ and $[CD]$, and it doesn't touch any of $A,B,C,D$.
+\item In all other cases, the intersection, if it exists, is determined by the endpoints. If it is a single point, it must be one of $A,B,C,D$, and if it is a whole segment, it will necessarily start and end with points in $A,B,C,D$.
+\end{enumerate}
+
+For the rest of explanation, we will consider the case of spherical segment intersection, because it's easier to visualize, but it should be easy to verify that this also applise to the general problem.
+
+\subsubsection{Proper intersection}
+Let's deal with the first case: there is a single proper intersection point $I$. For this to be the case, $A$ and $B$ must be on either side of plane $OCD$, and $C$ and $D$ must be on either side of plane $OAB$. Put another way, $A$ and $B$ must be on either side of the great circle containing $C$ and $D$, and vice versa.
+
+\centerFig{sph-9}
+
+We can check this with mixed product. We have to verify that
+\begin{itemize}
+\item $o_A = (C \times D) \cdot A$ and $o_B = (C \times D) \cdot B$ have opposite signs;
+\item $o_C = (A \times B) \cdot C$ and $o_D = (A \times B) \cdot D$ have opposite signs.
+\end{itemize}
+
+However, this time it's not enough. Sometimes, even though the conditions above are verified, there is no intersection, because the segments are on opposite sides of the sphere:
+
+\begin{center}
+    \includeFig{sph-10}
+    
+    $C$ and $D$ are on the other side of the sphere
+\end{center}
+
+To eliminate this kind of case, we also have to check that $o_A$ and $o_C$ have opposite signs (this is clearly not the case here).
+
+\exo{Consider a few more examples and verify that these criteria correctly detect proper intersections in all cases.}
+
+The intersection point $I$ must be in the intersection of planes $OAB$ and $OCD$.
+So direction $\vv{OI}$ must be perpendicular to their normals $A \times B$ and $C \times D$, that is, parallel to $(A \times B) \times (C \times D)$.
+Multiplying this by the sign of $o_D$ gives the correct direction.
+
+This is implemented by the code below. Note that the result, \lstinline|out|, only gives the direction of the intersection. If we want to find the intersection on the sphere, we need to scale it to have length $r$.
+\begin{lstlisting}
+bool properInter(p3 a, p3 b, p3 c, p3 d, p3 &out) {
+    p3 ab = a*b, cd = c*d; // normals of planes OAB and OCD
+    int oa = sgn(cd|a),
+        ob = sgn(cd|b),
+        oc = sgn(ab|c),
+        od = sgn(ab|d);
+    out = ab*cd*od; // four multiplications => careful with overflow!
+    return (oa != ob && oc != od && oa != oc);
+}
+\end{lstlisting}
+
+\subsubsection{Improper intersections}
+To deal with the second case, we will do as for 2D segments and test for every point among $A,B,C,D$ if it is on the other segment. If it is, we add it to a set $S$. $S$ will contain 0, 1, or 2 distinct points, describing an empty intersection, a single intersection point or an intersection segment.
+
+\centerFig{sph-11}
+
+To check whether a point $P$ is on spherical segment $[AB]$, we need to check that $P$ is on plane $OAB$, but also that $P$ is is ``between`` rays $[OA)$ and $[OB)$ on that plane.
+
+Let $\vv{n} = A \times B$, a normal of plane $OAB$. Checking that $P$ is on plane $OAB$ is easy: $\vv{n}\cdot P$ should be 0. If $P$ is indeed on plane $OAB$, then we can check if it is to the ``right'' of $[OA)$ by looking at cross product $A \times P$. It should be perpendicular to plane $OAB$. If it is in the same direction as $\vv{n}$, then $P$ is to the right of $OA$, and if it is in the opposite direction, then $P$ is to the left of $OA$. So we need to check $\vv{n} \cdot (A \times P) \geq 0$.
+Similarly, to check that $P$ is to the left of $OB$, we should check $\vv{n} \dot (B \times X) \leq 0$.
+
+\centerFig{sph-12}
+
+There remains only one special case: if $A$ and $B$ are the same point on the sphere, then $\vv{n}=\vv{0}$, and then we should just check that $P$ is also that same point.
+
+We arrive at the following implementation. To handle the general problem, instead of directly checking for equality between $P$ and $A$ or $B$, we check that they are in the same direction with the cross product.
+\begin{lstlisting}
+bool onSphSegment(p3 a, p3 b, p3 p) {
+    p3 n = a*b;
+    if (n == zero)
+        return a*p == zero && (a|p) > 0;
+    return (n|p) == 0 && (n|a*p) >= 0 && (n|b*p) <= 0;
+}
+\end{lstlisting}
+
+Now we just have to put all of this together in one function. First we check for a proper intersection, then if there is none we check segment by segment and add the points to set $S$. Since (as mentioned) we can't check for equality directly, we use a custom set structure that checks if the cross product is zero for every point already in the set.
+\begin{lstlisting}
+struct directionSet : vector<p3> {
+    using vector::vector; // import constructors
+    void insert(p3 p) {
+        for (p3 q : *this) if (p*q == zero) return;
+        push_back(p);
+    }
+};
+directionSet intersSph(p3 a, p3 b, p3 c, p3 d) {
+    assert(validSegment(a, b) && validSegment(c, d));
+    p3 out;
+    if (properInter(a, b, c, d, out)) return {out};
+    directionSet s;
+    if (onSphSegment(c, d, a)) s.insert(a);
+    if (onSphSegment(c, d, b)) s.insert(b);
+    if (onSphSegment(a, b, c)) s.insert(c);
+    if (onSphSegment(a, b, d)) s.insert(d);
+    return s;
+}
+\end{lstlisting}

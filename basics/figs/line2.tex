@@ -1,0 +1,12 @@
+\begin{tikzpicture}[scale=0.7]
+\tkzDefPoints{0/0/O, 0/0/P, 2/1/Q, -.75/1.5/V}
+\tkzDefPointBy[translation = from P to Q](V) \tkzGetPoint{V'}
+
+\tkzDrawSegment[add=1 and 1](P,Q)
+\tkzDrawVector(V,V')
+\tkzDrawPoints(P,Q)
+
+\tkzLabelPoints[above](P,Q)
+\tkzLabelSegment[sloped,below](P,Q){$ax+by = c$}
+\tkzLabelSegment[sloped,above](V,V'){$\dir = (b,-a)$}
+\end{tikzpicture}

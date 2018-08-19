@@ -1,0 +1,238 @@
+\pgfdeclarelayer{behind}
+\pgfdeclarelayer{back}
+\pgfdeclarelayer{middle}
+\pgfdeclarelayer{front}
+\pgfsetlayers{behind,back,middle,front,main}
+
+\usetikzlibrary{angles,quotes,decorations.pathreplacing,calc,decorations.markings,shapes.misc}
+\tikzstyle{point} = [circle, fill, minimum size=.1cm, inner sep=0]
+\tikzstyle{thinPoint} = [circle, fill, minimum size=.08cm, inner sep=0]
+\tikzstyle{hollow} = [circle, draw, minimum size=.15cm, inner sep=0]
+\tikzstyle{mycircle} = [circle, draw=black, fill=white, minimum size=.4cm, inner sep=0cm]
+\tikzset{every picture/.style={thick, font=\small}}
+\tikzset{% from https://tex.stackexchange.com/questions/163689/add-arrows-to-a-smooth-tikz-function
+    set arrow inside/.code={\pgfqkeys{/tikz/arrow inside}{#1}},
+    set arrow inside={end/.initial=>, opt/.initial=},
+    /pgf/decoration/Mark/.style={
+        mark/.expanded=at position #1 with
+        {
+            \noexpand\arrow[\pgfkeysvalueof{/tikz/arrow inside/opt}]{\pgfkeysvalueof{/tikz/arrow inside/end}}
+        }
+    },
+    arrow inside/.style 2 args={
+        set arrow inside={#1},
+        postaction={
+            decorate,decoration={
+                markings,Mark/.list={#2}
+            }
+        }
+    },
+    cross/.style={cross out, draw=black, solid, minimum size=2*(#1-\pgflinewidth), inner sep=0pt, outer sep=0pt, thick},
+    cross/.default={.08cm},
+}
+
+\usetkzobj{all}
+\tkzSetUpPoint[fill=black, size=.095cm]
+\tkzSetUpLine[line width=0.8pt]
+
+\pgfmathsetmacro{\thetaD}{60}
+\pgfmathsetmacro{\phiD}{120}
+\tdplotsetmaincoords{\thetaD}{\phiD}
+\pgfmathsetmacro{\angEl}{90-\thetaD}
+
+\newcommand{\drawGrid}[4]{
+    \foreach \x in {#1,...,#2} {
+        \draw[gray,thin,dotted] (\x,#3,0) -- (\x,#4,0);
+    }
+    \foreach \y in {#3,...,#4} {
+        \draw[gray,thin,dotted] (#1,\y,0) -- (#2,\y,0);
+    }
+}
+\newcommand{\tdMarkRightAngle}[4][.2]{%
+  \draw ($#3!#1!#2$) -- ($ #3!2!($($#3!#1!#2$)!.5!($#3!#1!#4$)$) $) -- ($#3!#1!#4$) -- #3  -- cycle;
+}
+\newcommand{\quality}{60}
+\tikzstyle{sphBack} = [densely dotted, thin, lg]
+\tikzstyle{sphFront} = [densely dotted, thin, gray]
+\newcommand\DrawLongitudeCircle[2][1]{
+    \pgfmathsetmacro{\lon}{#2}
+    \pgfmathsetmacro{\myLon}{\lon-\phiD}
+    \pgfmathsetmacro{\angVis}{atan(sin(\myLon)*cos(\angEl)/sin(\angEl))}
+    \begin{pgfonlayer}{back}
+        \draw[sphBack] plot [domain = \angVis-180:\angVis, samples = \quality, variable = \lat]
+            ({\r * cos(\lat) * cos (\lon)}, {\r * cos(\lat) * sin (\lon)}, {\r * sin(\lat)});
+    \end{pgfonlayer}
+    \begin{pgfonlayer}{front}
+        \draw[sphFront] plot [domain = \angVis:\angVis+180, samples = \quality, variable = \lat]
+            ({\r * cos(\lat) * cos (\lon)}, {\r * cos(\lat) * sin (\lon)}, {\r * sin(\lat)});
+    \end{pgfonlayer}
+}
+\newcommand\DrawLatitudeCircle[2][2]{
+    \pgfmathsetmacro{\lat}{#2}
+    \pgfmathsetmacro{\sinVis}{sin(\lat)/cos(\lat)*sin(\angEl)/cos(\angEl)}
+    \pgfmathsetmacro{\myAngVis}{asin(min(1,max(\sinVis,-1)))}
+    \pgfmathsetmacro{\angVis}{\myAngVis}
+    \begin{pgfonlayer}{back}
+        \draw[sphBack] plot [domain = \phiD+\angVis:\phiD+180-\angVis, samples = \quality, variable = \lon]
+            ({\r * cos(\lat) * cos (\lon)}, {\r * cos(\lat) * sin (\lon)}, {\r * sin(\lat)});
+    \end{pgfonlayer}
+    \begin{pgfonlayer}{front}
+        \draw[sphFront] plot [domain = \phiD-180-\angVis:\phiD+\angVis, samples = \quality, variable = \lon]
+            ({\r * cos(\lat) * cos (\lon)}, {\r * cos(\lat) * sin (\lon)}, {\r * sin(\lat)});
+    \end{pgfonlayer}
+}
+\newcommand{\drawSphere}[4]{
+    \pgfmathsetmacro{\r}{#1}
+    
+    \begin{scope}[tdplot_screen_coords]
+        \begin{pgfonlayer}{back}
+            \fill[lg, opacity=#4] (0,0) circle (\r);
+        \end{pgfonlayer}
+        \begin{pgfonlayer}{front}
+            \fill[lg, opacity=#4] (0,0) circle (\r);
+            %\draw (0,0) circle (\r);
+        \end{pgfonlayer}
+    \end{scope}
+    
+    \pgfmathsetmacro{\firstLat}{-90+#2}
+    \pgfmathsetmacro{\secondLat}{-90+2*#2}
+    \pgfmathsetmacro{\dLon}{#3}
+    \foreach \lat in {\firstLat, \secondLat, ..., 89} {
+        \DrawLatitudeCircle[\r]{\lat}
+    }
+    \foreach \lon in {0, \dLon, ..., 179} {
+        \DrawLongitudeCircle[\r]{\lon}
+    }
+}
+\newcommand{\sph}[4]{
+    \coordinate (#1) at ($({#2*cos(#3)*cos(#4)}, {#2*cos(#3)*sin(#4)}, {#2*sin(#3)})$);
+}
+\newcommand{\myFrontArc}[5]{%
+
+	%determine vector lengths
+	\pgfmathsetmacro{\ax}{\tdplotax - \tdplotvertexx}
+	\pgfmathsetmacro{\ay}{\tdplotay - \tdplotvertexy}
+	\pgfmathsetmacro{\az}{\tdplotaz - \tdplotvertexz}
+
+	\pgfmathsetmacro{\bx}{\tdplotbx - \tdplotvertexx}
+	\pgfmathsetmacro{\by}{\tdplotby - \tdplotvertexy}
+	\pgfmathsetmacro{\bz}{\tdplotbz - \tdplotvertexz}
+
+	%determine normal to vectors
+	\tdplotcrossprod(\ax,\ay,\az)(\bx,\by,\bz)
+
+	%DEBUG: show the cross product
+	%\draw[->,blue] (\tdplotvertexx,\tdplotvertexy,\tdplotvertexz) 
+		-- ++(\tdplotresx,\tdplotresy,\tdplotresz);
+
+	%get angles for this vector
+	\tdplotgetpolarcoords{\tdplotresx}{\tdplotresy}{\tdplotresz}
+
+	\typeout{angles for cross product: phi: \tdplotresphi theta: \tdplotrestheta}
+
+	%place the rotated coordinate system so that the z' axis points along this vector
+	\tdplotsetrotatedcoords{\tdplotresphi}{\tdplotrestheta}{0}
+	\coordinate (Vertex) at (\tdplotvertexx,\tdplotvertexy,\tdplotvertexz);
+	\tdplotsetrotatedcoordsorigin{(Vertex)}
+
+	%DEBUG: show the rotated coordinate system
+	%\draw[thick,tdplot_rotated_coords,->] (0,0,0) -- (1,0,0) node[anchor=north east]{$x'$};
+	%\draw[thick,tdplot_rotated_coords,->] (0,0,0) -- (0,1,0) node[anchor=north west]{$y'$};
+	%\draw[thick,tdplot_rotated_coords,->] (0,0,0) -- (0,0,1) node[anchor=south]{$z'$};
+
+	%calculate the start angle of the arc
+	\tdplottransformmainrot{\ax}{\ay}{\az}
+	\tdplotgetpolarcoords{\tdplotresx}{\tdplotresy}{\tdplotresz}
+	\pgfmathsetmacro{\tdplotstartphi}{\tdplotresphi}
+
+
+	%calculate the end angle of the arc
+	\tdplottransformmainrot{\bx}{\by}{\bz}
+	\tdplotgetpolarcoords{\tdplotresx}{\tdplotresy}{\tdplotresz}
+
+	%draw the arc
+	\pgfmathparse{\tdplotstartphi < \tdplotresphi}
+	\ifthenelse{\equal{\pgfmathresult}{1}}%
+		{}%
+		{
+			\pgfmathsetmacro{\tdplotstartphi}{\tdplotstartphi - 360}
+		}
+		
+	\typeout{startphi: \tdplotstartphi}
+	\typeout{endphi: \tdplotresphi}
+    
+    \begin{pgfonlayer}{behind}
+        \filldraw[tdplot_rotated_coords,#5] (0,0,0) -- +(\tdplotstartphi:#2) arc (\tdplotstartphi:\tdplotresphi:#2) -- cycle;
+    \end{pgfonlayer}
+	\draw[tdplot_rotated_coords,#1] (0,0,0) + (\tdplotstartphi:#2) arc (\tdplotstartphi:\tdplotresphi:#2);
+
+	\pgfmathsetmacro{\tdplotresphi}{(\tdplotresphi + \tdplotstartphi)/2}
+
+	\draw[tdplot_rotated_coords] (0,0,0) + (\tdplotresphi:#2) node[#3]{#4};
+}
+\newcommand{\myBackArc}[5]{%
+
+	%determine vector lengths
+	\pgfmathsetmacro{\ax}{\tdplotax - \tdplotvertexx}
+	\pgfmathsetmacro{\ay}{\tdplotay - \tdplotvertexy}
+	\pgfmathsetmacro{\az}{\tdplotaz - \tdplotvertexz}
+
+	\pgfmathsetmacro{\bx}{\tdplotbx - \tdplotvertexx}
+	\pgfmathsetmacro{\by}{\tdplotby - \tdplotvertexy}
+	\pgfmathsetmacro{\bz}{\tdplotbz - \tdplotvertexz}
+
+	%determine normal to vectors
+	\tdplotcrossprod(\ax,\ay,\az)(\bx,\by,\bz)
+
+	%DEBUG: show the cross product
+	%\draw[->,blue] (\tdplotvertexx,\tdplotvertexy,\tdplotvertexz) 
+		-- ++(\tdplotresx,\tdplotresy,\tdplotresz);
+
+	%get angles for this vector
+	\tdplotgetpolarcoords{\tdplotresx}{\tdplotresy}{\tdplotresz}
+
+	\typeout{angles for cross product: phi: \tdplotresphi theta: \tdplotrestheta}
+
+	%place the rotated coordinate system so that the z' axis points along this vector
+	\tdplotsetrotatedcoords{\tdplotresphi}{\tdplotrestheta}{0}
+	\coordinate (Vertex) at (\tdplotvertexx,\tdplotvertexy,\tdplotvertexz);
+	\tdplotsetrotatedcoordsorigin{(Vertex)}
+
+	%DEBUG: show the rotated coordinate system
+	%\draw[thick,tdplot_rotated_coords,->] (0,0,0) -- (1,0,0) node[anchor=north east]{$x'$};
+	%\draw[thick,tdplot_rotated_coords,->] (0,0,0) -- (0,1,0) node[anchor=north west]{$y'$};
+	%\draw[thick,tdplot_rotated_coords,->] (0,0,0) -- (0,0,1) node[anchor=south]{$z'$};
+
+	%calculate the start angle of the arc
+	\tdplottransformmainrot{\ax}{\ay}{\az}
+	\tdplotgetpolarcoords{\tdplotresx}{\tdplotresy}{\tdplotresz}
+	\pgfmathsetmacro{\tdplotstartphi}{\tdplotresphi}
+
+
+	%calculate the end angle of the arc
+	\tdplottransformmainrot{\bx}{\by}{\bz}
+	\tdplotgetpolarcoords{\tdplotresx}{\tdplotresy}{\tdplotresz}
+
+	%draw the arc
+	\pgfmathparse{\tdplotstartphi < \tdplotresphi}
+	\ifthenelse{\equal{\pgfmathresult}{1}}%
+		{}%
+		{
+			\pgfmathsetmacro{\tdplotstartphi}{\tdplotstartphi - 360}
+		}
+		
+	\typeout{startphi: \tdplotstartphi}
+	\typeout{endphi: \tdplotresphi}
+    
+    \begin{pgfonlayer}{behind}
+        \filldraw[tdplot_rotated_coords,#5] (0,0,0) -- +(\tdplotresphi:#2) arc (\tdplotresphi:\tdplotstartphi+360:#2) -- cycle;
+    \end{pgfonlayer}
+	\draw[tdplot_rotated_coords,#1] (0,0,0) + (\tdplotresphi:#2) arc (\tdplotresphi:\tdplotstartphi+360:#2);
+
+	\pgfmathsetmacro{\tdplotresphi}{(\tdplotresphi + \tdplotstartphi)/2}
+
+	\draw[tdplot_rotated_coords] (0,0,0) + (\tdplotresphi:#2) node[#3]{#4};
+}
+\newcommand{\tdplotdrawpolytopebackarc}[4][]{%
+    \myBackArc{#1}{#2}{#3}{#4}{opacity=0}
+}

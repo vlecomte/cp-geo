@@ -1,0 +1,23 @@
+\newcommand{\fig}[3]{%
+    \begin{tikzpicture}[tdplot_main_coords, scale=1.5]
+        \drawSphere{1}{22.5}{22.5}{.4}
+        \coordinate (O) at (0,0,0);
+        \coordinate (A) at (1.000,0.000,0.000); % 0,0
+        \coordinate (B) at (0.707,0.707,0.000); % 0,45
+        \coordinate (C) at (0.653,0.653,0.383); % 22.5,45
+        \tdplotdefinepoints(0,0,0)(1.000,0.000,0.000)(0.707,0.707,0.000) % AB
+        \tdplotdrawpolytopearc[thick]{1}{}{}
+        \tdplotdefinepoints(1.000,0.000,0.000)(.85,1,0.000)(.9,0.653,0.383) % I'm just making those up so it looks okay on the figure
+        \tdplotdrawpolytopearc[thick,#1]{.4}{right,yshift=.05cm}{$\theta$}
+        \node[point,label=right:{$#2$}] at (B) {};
+        \tdplotdefinepoints(0,0,0)(1.000,0.000,0.000)(0.653,0.653,0.383) % AC
+        \tdplotdrawpolytopearc[thick]{1}{}{}
+        \node[point,label=left:{$A$}] at (A) {};
+        \node[point,label=right:{$#3$}] at (C) {};
+    \end{tikzpicture}
+}%
+\begin{tabu} to \linewidth {X[c]X[c]} 
+    \fig{->}{B}{C} & \fig{<-}{C}{B} \\
+    \lstinline|angleSph(a,b,c)| $\approx 30\degree$ & \lstinline|angleSph(a,b,c)| $\approx 30\degree$ \\
+    \lstinline|orientedAngleSph(a,b,c)| $\approx 30\degree$ & \lstinline|orientedAngleSph(a,b,c)| $\approx 330\degree$ \\
+\end{tabu}

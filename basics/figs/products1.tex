@@ -1,0 +1,31 @@
+\newcommand{\vw}[1]{
+    \tkzInit[ymin=-1.5,ymax=2.5,xmin=-3,xmax=4]
+    \tkzClip
+    \tkzDefPoints{0/0/O, 3/1/V, #1/W}
+    \tkzDefPointBy[projection = onto O--V](W) \tkzGetPoint{P}
+    
+    \tkzDrawSegment[dashed, gray, add=.5 and .3](O,V)
+    \tkzDrawSegment[dashed, gray](W,P)
+    \tkzDrawVectors(O,V O,W)
+    \tkzMarkRightAngle[color=gray](O,P,W)
+    
+    \tkzLabelSegment[above, pos=0.7](O,V){$\vv{v}$}
+    \tkzLabelAngle[pos=.9](V,O,W){$\theta$}
+}%
+\begin{tabu}{cc}
+    \begin{tikzpicture}[scale=0.7]
+        \vw{2/-1}
+        \tkzLabelSegment[below=.1cm, pos=.4](O,W){$\vv{w}$}
+        \tkzMarkAngle[size=.6cm](W,O,V)
+        \draw[decorate, decoration={brace,amplitude=0.15cm,raise=0.05cm}] (O) -- (P) node[midway, above, sloped, yshift=2mm] {$\projv{v}{w}$};
+    \end{tikzpicture}
+    &
+    \begin{tikzpicture}[scale=0.7]
+        \vw{-2/2}
+        \tkzLabelSegment[above=.1cm, pos=.4](O,W){$\vv{w}$}
+        \tkzMarkAngle[size=.6cm](V,O,W)
+        \draw[decorate, decoration={brace,amplitude=0.15cm,raise=0.05cm}] (O) -- (P) node[midway, below, sloped, yshift=-2mm] {$\projv{v}{w}$};
+    \end{tikzpicture}
+    \\
+    $\projv{v}{w} = 1.58$ & $\projv{v}{w} = -1.26$\\
+\end{tabu}

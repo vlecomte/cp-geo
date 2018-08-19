@@ -1,0 +1,12 @@
+\newcommand{\tangents}[3]{
+    \tkzDefPoints{0/0/C1, #1/0/C2}
+    \pgfmathsetmacro{\d}{#1}
+    \pgfmathsetmacro{\dr}{#2-#3}
+    \pgfmathsetmacro{\vx}{\dr / \d}
+    \pgfmathsetmacro{\vy}{sqrt(\d * \d - \dr * \dr) / \d}
+    \pgfmathsetmacro{\ax}{#2*\vx}
+    \pgfmathsetmacro{\ay}{#2*\vy}
+    \pgfmathsetmacro{\bx}{#1+#3*\vx}
+    \pgfmathsetmacro{\by}{#3*\vy}
+    \tkzDefPoints{\ax/-\ay/I1, \ax/\ay/J1, \bx/-\by/I2, \bx/\by/J2}
+}%

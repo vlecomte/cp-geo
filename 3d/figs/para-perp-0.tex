@@ -1,0 +1,25 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1.5]
+    \coordinate (O) at (0,0,0);
+    \pgfmathsetmacro{\h}{.3}
+    \pgfmathsetmacro{\th}{2*\h}
+    \fill[lg, opacity=.8] (O) ++(1,1,\h) -- ++(-2,0,0) -- ++(0,-2,-\th) -- ++(2,0,0) -- cycle;
+    \fill[lg, opacity=.8] (O) ++(1,1,-\h) -- ++(-2,0,0) -- ++(0,-2,\th) -- ++(2,0,0) -- cycle;
+    \draw (-1.5,0,0) -- (1.5,0,0);
+    \coordinate (A) at (1,0,0);
+    \pgfmathsetmacro{\x}{.8}
+    \pgfmathsetmacro{\xh}{\x*\h}
+    \coordinate (B) at (1,\x,-\xh);
+    \coordinate (C) at (1,\x,\xh);
+    \coordinate (D) at (1,-\x,\xh);
+    \draw[semithick] (A) -- (B) (A) -- (C) (A) -- (D);
+    \tdplotdefinepoints(1,0,0)(1,.8,-.24)(1,.8,.24)
+    \tdplotdrawpolytopearc[semithick]{.5}{right}{$\theta$}
+    \tdplotdefinepoints(1,0,0)(1,.8,.24)(1,-.8,.24)
+    \tdplotdrawpolytopearc[semithick]{.3}{above}{$\pi-\theta$}
+    \tdplotdefinepoints(0,.8,.24)(0,1.04,1.04)(0,.56,1.04)
+    \tdplotdrawpolytopearc[semithick]{.3}{above}{$\theta$}
+    %\draw[gray,semithick,dashed] (0,\x,\xh) ++($-.2*(0,\xh,\x)$) -- ++($1.5*(0,\xh,\x)$);
+    \draw[gray,-stealth] (0,\x,\xh) -- ++(0,\xh,\x) node[above] {$\vv{n_2}$};
+    \draw[-stealth] (0,\x,\xh) -- ++(0,-\xh,\x) node[above] {$\vv{n_1}$};
+    \draw[-stealth] (0,-\x,\xh) -- ++(0,\xh,\x) node[above] {$\vv{n_2}$};
+\end{tikzpicture}

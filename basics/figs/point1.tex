@@ -1,0 +1,23 @@
+\input{tikz/point-setup}
+\vc{
+    \begin{tikzpicture}[scale=0.8]
+        \axes
+        \tkzDefPointBy[translation = from O to W](V) \tkzGetPoint{VW}
+        
+        \tkzDrawVector[gray, dashed](V,VW)
+        \vw
+        \tkzLabelSegment[right, gray](V,VW){$\vv{w}$}
+        \tkzLabelSegment[above, sloped](O,VW){$\vv{v}+\vv{w}$}
+    \end{tikzpicture}
+}{addition}
+\vc{
+    \begin{tikzpicture}[scale=0.8]
+        \axes
+        \tkzDefPointBy[translation = from W to O](V) \tkzGetPoint{VW}
+        
+        \tkzDrawVector[gray, dashed](W,V)
+        \vw
+        \tkzLabelSegment[gray, above, sloped](W,V){$\vv{v}-\vv{w}$}
+        \tkzLabelSegment[below, sloped](O,VW){$\vv{v}-\vv{w}$}
+    \end{tikzpicture}
+}{subtraction}

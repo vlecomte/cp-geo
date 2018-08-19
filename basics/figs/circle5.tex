@@ -1,0 +1,23 @@
+\begin{tikzpicture}
+\tkzDefPoints{0/0/C1, 3.5/0/C2}
+\tkzInterCC[R](C1,3cm)(C2,2cm) \tkzGetPoints{J}{I}
+\tkzDefMidPoint(I,J) \tkzGetPoint{P}
+
+\tkzDrawCircle[color=gray](C1,I)
+\tkzDrawCircle[color=gray](C2,I)
+\tkzMarkAngle(C2,C1,J)
+\tkzMarkRightAngle(C1,P,J)
+\tkzDrawSegments(C1,C2 I,J C1,J C2,J)
+\tkzDrawPoints(C1,C2,I,J,P)
+
+\tkzLabelPoint[left](C1){$O_1$}
+\tkzLabelPoint[right](C2){$O_2$}
+\tkzLabelPoint[below=0.3cm](I){$I$}
+\tkzLabelPoint[above=0.3cm](J){$J$}
+\tkzLabelPoint[below right](P){$P$}
+\tkzLabelSegment[above left](C1,J){$r_1$}
+\tkzLabelSegment[above right](C2,J){$r_2$}
+%\tkzLabelSegment[below](C1,C2){$d$}
+\tkzMarkSegments[mark=||, size=3pt](P,I P,J)
+\tkzLabelSegment[left](P,J){$h$}
+\end{tikzpicture}

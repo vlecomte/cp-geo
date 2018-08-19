@@ -1,0 +1,18 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1.6]
+    \coordinate (O) at (0,0,0);
+    \drawSphere{1}{22.5}{22.5}{.4}
+    \coordinate (P) at (0.707,0.707,0.000); % 0,45
+    \coordinate (Q) at (0.000,0.707,0.707); % 45,90
+    \coordinate (R) at (0.653,0.271,0.707); % 45,22.5
+    \coordinate (S) at (0.000,0.924,0.383); % 22.5,90
+    \coordinate (I) at (0.244,0.797,0.553);
+    \tdplotdefinepoints(0,0,0)(0.707,0.707,0.000)(0.000,0.707,0.707)
+    \tdplotdrawpolytopearc[thick]{1}{}{}
+    \tdplotdefinepoints(0,0,0)(0.653,0.271,0.707)(0.000,0.924,0.383)
+    \tdplotdrawpolytopearc[thick]{1}{}{}
+    \node[point,label=below:{$A$}] at (P) {};
+    \node[point,label=above:{$B$}] at (Q) {};
+    \node[point,label=left:{$C$}] at (R) {};
+    \node[point,label=right:{$D$}] at (S) {};
+    \node[point] at (I) {};
+\end{tikzpicture}

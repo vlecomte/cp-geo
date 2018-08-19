@@ -1,0 +1,20 @@
+# File types
+*.aux
+*.auxlock
+*.bbl
+*.bcf
+*.blg
+*.bib.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.pdf
+*.run.xml
+*.toc
+*spoiler*
+
+# Specific folders and files
+/figs-out/
+/solutions.tex
+/test/

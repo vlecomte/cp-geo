@@ -1,0 +1,239 @@
+\section{Case studies}\label{s:case-studies}
+In this section, we explore some practical cases in which the imprecisions of floating-point numbers can cause problems and give some possible solutions.
+
+\subsection{Problem ``Keeping the Dogs Apart''}\label{ss:dogs}
+We will first talk about problem ``Keeping the Dogs Apart'', which we mentioned before, because it is a good example of accumulation of error and how to deal with it. It was written by Markus Fanebust Dregi for NCPC 2016. You can read the full statement and submit it at \url{https://open.kattis.com/problems/dogs}.
+
+Here is a summarized problem statement: There are two dogs A and B, walking at the same speed along different polylines $A_0 \ldots A_{n-1}$ and $B_0 \ldots B_{m-1}$, made of 2D integer points with coordinates in $[0,10^4]$. They start at the same time from $A_0$ and $B_0$ respectively. What is the closest distance they will ever be from each other before one of them reaches the end of its polyline? The relative/absolute error tolerance is $10^{-4}$, and $n,m \leq 10^5$.
+
+The idea of the solution is to divide the time into intervals where both dogs stay on a single segment of their polyline. Then the problem reduces to the simpler task of finding the closest distance that get when one walks on $[PQ]$ and the other on $[RS]$, with $|PQ|=|RS|$. This division into time intervals can be done with the two-pointers technique: if we remember for each dog how many segments it has completely walked and their combined length, we can work out when is the next time on of the dogs will switch segments.
+
+The main part of the code looks like this. We assume that \lstinline|moveBy(a,b,t)| gives the point on a segment $[AB]$ at a certain distance $t$ from $A$, while \lstinline|minDist(p,q,r,s)| gives the minimum distance described above for $P,Q,R,S$.
+\begin{lstlisting}
+int i = 0, j = 0; // current segment of A and B
+double ans = abs(a[0]-b[0]), // closest distance so far
+      sumA = 0, // total length of segments fully walked by A
+      sumB = 0; // total length of segments fully walked by B
+
+// While both dogs are still walking
+while (i+1 < n && j+1 < m) {
+    double start = max(sumA, sumB), // start of time interval
+              dA = abs(a[i+1]-a[i]), // length of current segment of A
+              dB = abs(b[j+1]-b[j]), // length of current segment of B
+            endA = sumA + dA, // time at which A will end this segment
+            endB = sumB + dB, // time at which B will end this segment
+             end = min(endA, endB); // end of time interval
+    
+    // Compute start and end positions of both dogs
+    pt p = moveBy(a[i], a[i+1], start-sumA),
+       q = moveBy(a[i], a[i+1], end-sumA),
+       r = moveBy(b[j], b[j+1], start-sumB),
+       s = moveBy(b[j], b[j+1], end-sumB);
+    
+    // Compute closest distance for this time interval
+    ans = min(ans, minDist(p,q,r,s));
+    
+    // We get to the end of the segment for one dog or the other,
+    // so move to the next and update the sum of lengths
+    if (endA < endB) {
+        i++;
+        sumA += dA;
+    } else {
+        j++;
+        sumB += dB;
+    }
+}
+// output ans
+\end{lstlisting}
+
+As we said in section~\ref{ss:accumulation}, the sums \lstinline|sumA| and \lstinline|sumB| accumulate very large errors. Indeed, they can both theoretically reach $M=\sqrt{2}\times 10^9$, and are based on up to $k=10^5$ additions. With \lstinline|double|, $\epsilon = 2^{-53}$, so we could reach up to $kM\epsilon \approx 0.016$ in absolute error in both \lstinline|sumA| and \lstinline|sumB|. Since this error directly translates into errors in $P,Q,R,S$ and is bigger than the tolerance of $10^{-4}$, this causes WA.
+
+In the rest of this section, we will look at two ways we can avoid this large accumulation of error in \lstinline|sumA| and \lstinline|sumB|. Since this is currently much bigger than what could have been caused by the initial length computations, \lstinline|moveBy()| and \lstinline|minDist()|, we will consider those errors to be negligible for the rest of the discussion.
+
+\subsubsection{Limiting the magnitude involved}
+The first way we can limit the accumulation of error in \lstinline|sumA| and \lstinline|sumB| is to realize that in fact, we only care about the difference between them: if we add a certain constant to both variables, this doesn't change the value of \lstinline|start-sumA|, \lstinline|end-sumA|, \lstinline|start-sumB| or \lstinline|end-sumB|, so the value of \lstinline|p|, \lstinline|q|, \lstinline|r|, \lstinline|s| is unchanged.
+
+So we can adapt the code by adding these lines at the end of the \lstinline|while| loop:
+\begin{lstlisting}
+double minSum = min(sumA, sumB);
+sumA -= minSum;
+sumB -= minSum;
+\end{lstlisting}
+
+After this, one of \lstinline|sumA| and \lstinline|sumB| becomes zero, while the other carries the error on both. In total, at most $n+m$ additions and $n+m$ subtractions are performed on them, for a total of $k \leq 4\times 10^5$. But since the difference between \lstinline|sumA| and \lstinline|sumB| never exceeds the length of one segment, that is, $M=\sqrt{2} \times 10^4$, the error is much lower than before:
+\[kM\epsilon = \left(4\times 10^5\right) \times \left(\sqrt{2}\times 10^4\right) \times 2^{-53} \approx 6.3 \times 10^{-7}\]
+so it gives an AC verdict.
+
+So here we managed to reduce the precision mistakes on our results by reducing the magnitude of the numbers that we manipulate. Of course, this is only possible if the problem allows it.
+
+\subsubsection{Summing positive numbers more precisely}
+Now we present different way to reduce the precision mistake, based on the fact that all the terms in the sum we're considering are positive. This is a good thing, because it avoids catastrophic cancellation (see section~\ref{ss:abs-rel}).
+
+In fact, addition of nonnegative numbers conserves relative precision: if you sum two nonnegative numbers $a$ and $b$ with relative errors of $k_a\epsilon$ and $k_b\epsilon$ respectively, the worst-case relative error on $a+b$ is about\footnote{It could in fact go up to $(\max(k_a,k_b)(1+\epsilon)+1)\epsilon$ but the difference is negligible for our purposes.} $(\max(k_a,k_b)+1)\epsilon$.
+
+Let's say we need to compute the sum of $n$ nonnegative numbers $a_1,\ldots,a_n$. We suppose they are exact. If we perform the addition in the conventional order, like this:
+\[\Bigg(\cdots\Big(\big((a_1+a_2)+a_3\big)+a_4\Big)+\cdots\Bigg)+a_n\]
+then
+\begin{itemize}
+\item $a_1+a_2$ will have a relative error of $(\max(0,0)+1)\epsilon = \epsilon$;
+\item $(a_1+a_2)+a_3$ will have a relative error of $(\max(1,0)+1)\epsilon = 2\epsilon$;
+\item $\big((a_1+a_2)+a_3\big)+a_4$ will have a relative error of $(\max(2,0)+1)\epsilon = 3\epsilon$;
+\item \ldots and so on.
+\end{itemize}
+So the complete sum will have an error of $(n-1)\epsilon$, not better than what we had before.
+
+But what if we computed the additions in another order? For example, with $n=8$, we could do this:
+\[\big((a_1+a_2)+(a_3+a_4)\big) + \big((a_5+a_6)+(a_7+a_8)\big)\]
+then all additions of two numbers have error $\epsilon$, all additions of 4 numbers have error $(\max(1,1)+1)\epsilon = 2\epsilon$, and the complete addition has error $(\max(2,2)+1)\epsilon = 3\epsilon$, which is much better than $(n-1)\epsilon = 7\epsilon$. In general, for $n = 2^k$, we can reach a relative precision of $k\epsilon$.
+
+We can use this grouping technique to create an accumulator such that the relative error after adding $n$ numbers is at most $2\log_2(n)\epsilon$.\footnote{We could even get $(\log_2{n}+1)\epsilon$ but we don't know a way to do it faster than $O(n\log n)$.} Here is an $O(n)$ implementation:
+\begin{lstlisting}
+struct stableSum {
+    int cnt = 0;
+    vector<double> v, pref{0};
+    void operator+=(double a) {
+        assert(a >= 0);
+        int s = ++cnt;
+        while (s % 2 == 0) {
+            a += v.back();
+            v.pop_back(), pref.pop_back();
+            s /= 2;
+        }
+        v.push_back(a);
+        pref.push_back(pref.back() + a);
+    }
+    double val() {return pref.back();}
+};
+\end{lstlisting}
+
+Let's break this code down. This structure provides two methods: \lstinline|add(a)| to add a number $a$ to the sum, and \lstinline|val()| to get the current value of the sum. Array \lstinline|v| contains the segment sums that currently form the complete sum, similar to Fenwick trees: for example, if we have added 11 elements, \lstinline|v| would contain three elements:
+\[v = \{a_1+\cdots+a_8,\ a_9+a_{10},\ a_{11}\}\]
+while \lstinline|pref| contains the prefix sums of \lstinline|v|: \lstinline|pref[i]| contains the sum of the $i$ first elements of \lstinline|v|.
+
+Function \lstinline|add()| performs the grouping: when adding a new element \lstinline|a|, it will merge it with the last element of \lstinline|v| while they contain the same number of terms, then \lstinline|a| is added to the end of \lstinline|v|. For example, if we add the $12\nth$ element $a_{12}$, the following steps will happen:
+\begin{align*}
+v &= \{a_1+\cdots+a_8,\ a_9+a_{10},\ a_{11}\} \quad &a = a_{12}\\
+v &= \{a_1+\cdots+a_8,\ a_9+a_{10}\} \quad &a = (a_{11})+a_{12}\\
+v &= \{a_1+\cdots+a_8\} \quad &a = (a_9+a_{10})+a_{11}+a_{12}\\
+v &= \{a_1+\cdots+a_8,\ a_9+a_{10}+a_{11}+a_{12}\}
+\end{align*}
+
+The number of additions we have to make for the $i\nth$ number is the number of times it is divisible by 2. Since we only add one element to \lstinline|v| when adding an element to the sum, this is amortized constant time.
+
+By simply changing the types of \lstinline|sumA| and \lstinline|sumB| to \lstinline|stableSum| and adding \lstinline|.val()| whenever the value is read in the initial code, we can get down to an error of about
+\[2\log_2\big(10^5\big) M \epsilon = \Big(2\log_2\big(10^5\big)\Big) \times \left(\sqrt{2} \times 10^9\right) \times 2^{-53} \approx 5.2 \times 10^{-6}\]
+which also gives an AC verdict.\footnote{Theoretically we can't really be sure though, since both \lstinline|sumA| and \lstinline|sumB| could have that error, and we still have to take into account the other operations performed.}
+
+This is not as good as the precision obtained with the previous method, but that method was specific to the problem, while this one can be applied whenever we need to compute sums of nonnegative numbers.
+
+\subsection{Quadratic equation}
+As another example, we will study the precision problems that can occur when computing the roots of an equation of the type $ax^2+bx+c=0$ with $a\neq 0$. We will see how some precision problems are unavoidable, while others can be circumvented by 
+
+When working with full-precision reals, we can solve quadratic equations in the following way. First we compute the discriminant $\Delta = b^2-4ac$. If $\Delta < 0$, there is no solution, while if $\Delta \geq 0$ there is are 1 or 2 solutions, given by \[x = \frac{-b \pm \sqrt{\Delta}}{2a}\]
+
+The first difficulty when working with floating-point numbers is the computation of $\Delta$: if $\Delta \approx 0$, that is $b^2 \approx 4ac$, then the imprecisions can change the sign of $\Delta$, therefore changing the number of solutions.
+
+Even if that does not happen, since we have to perform a square root, the problems that we illustrated with line-circle intersection in section~\ref{ss:other-operations} can also happen here.\footnote{Which is not surprising, since the bottom of a parabola looks a lot like a circle.} Take the example of equation $x^2-2x+1=0$, which is a single root $x=0$. If there is a small error on $c$, it can translate into a large error on the roots. For example, if $c=1-10^{-6}$, then the roots become
+\[x = \frac{-b \pm \sqrt{b^2-4ac}}{2a} = \frac{2 \pm \sqrt{4 - 4(1-10^{-6})}}{2} = \frac{2 \pm 2\sqrt{10^{-6}}}{2} = 1 \pm 10^{-3}.\]
+where the error $10^{-3}$ is much bigger than the initial error on $c$.
+
+\centerFig{cases0}
+
+Even if the computation of $\sqrt{\Delta}$ is very precise, a second problem can occur. If $b$ and $\sqrt{\Delta}$ have a similar magnitude, in other words when $b^2 \gg ac$, then catastrophic cancellation will occur for one of the roots. For example if $a=1,b=10^4,c=1$, then the roots will be:
+\[x_1 = \frac{-10^4 - \sqrt{10^8-4}}{2} \approx -10^4 \qquad x_2 = \frac{-10^4 + \sqrt{10^8-4}}{2} \approx 10^{-4}\]
+
+The computation of $x_1$ goes fine because $-b$ and $-\sqrt{\Delta}$ have the same sign. But because the magnitude of $-b+\sqrt{\Delta}$ is $10^8$ times smaller than the magnitude of $b$ and $\sqrt{\Delta}$, the relative error on $x_2$ will be $10^8$ times bigger than the relative error on $b$ and $\sqrt{\Delta}$.
+
+Fortunately, in this case we can avoid catastrophic cancellation entirely by rearranging the expression:
+\begin{align*}
+\frac{-b \pm \sqrt{b^2-4ac}}{2a}
+&= \frac{-b \pm \sqrt{b^2-4ac}}{2a} \times \frac{-b \mp \sqrt{b^2-4ac}}{-b \mp \sqrt{b^2-4ac}}\\
+&= \frac{(-b^2) - \left(\sqrt{b^2-4ac}\right)^2}{2a \left(-b \mp \sqrt{b^2-4ac}\right)}\\
+&= \frac{4ac}{2a \left(-b \mp \sqrt{b^2-4ac}\right)}\\
+&= \frac{2c}{-b \mp \sqrt{b^2-4ac}}
+\end{align*}
+In this new expression, since the sign of the operation is opposite from the sign in the original expression, catastrophic cancellation happens in only one of the two.
+
+So if $b \geq 0$, we can use $\frac{-b-\sqrt{\Delta}}{2a}$ for the first solution and $\frac{2c}{-b-\sqrt{\Delta}}$ for the second solution, while if $b \leq 0$, we can use $\frac{2c}{-b+\sqrt{\Delta}}$ for the first solution and $\frac{-b+\sqrt{\Delta}}{2a}$ for the second solution. We only need to be careful that the denominator  is never zero.
+
+This gives a safer way to find the roots of a quadratic equation. This function returns the number of solutions, and places them in \lstinline|out| in no particular order.
+\begin{lstlisting}
+int quadRoots(double a, double b, double c, pair<double,double> &out) {
+    assert(a != 0);
+    double disc = b*b - 4*a*c;
+    if (disc < 0) return 0;
+    double sum = (b >= 0) ? -b-sqrt(disc) : -b+sqrt(disc);
+    out = {sum/(2*a), sum == 0 ? 0 : (2*c)/sum};
+    return 1 + (disc > 0);
+}
+\end{lstlisting}
+
+In many cases, there are several ways to write an expression, and they can have very different behaviors when used with floating-point numbers. So if you realize that the expression you are using can cause precision problems in some cases, it can be a good idea to rearrange the expression to handle them, as we did here.
+
+\subsection{Circle-circle intersection}
+This last case study will study one possible implementation for the intersection of two circles. It will show us why we shouldn't rely too much on mathematical truths when building our programs.
+
+We want to know whether two circles of centers $C_1,C_2$ and radii $r_1,r_2$ touch, and if they do what are the intersection points. Here, we will solve this problem with triangle inequalities and the cosine rule.\footnote{The way we actually implement it in this book is completely different.} Let $d = |C_1C_2|$. The question of whether the circles touch is equivalent to the question of whether there exists a (possibly degenerate) triangle with edge lengths $d,r_1,r_2$.
+
+\centerFig{cases1}
+
+We know that such a triangle exists iff the triangle inequalities are respected, that is:
+\[|r_2-r_1| \leq d \leq r_1+r_2\]
+If this is true, then we can find the angle at $C_1$, which we'll call $\alpha$, thanks to the cosine rule:
+\[\cos\alpha = \frac{d^2+r_1^2-r_2^2}{2dr_1}\]
+
+Once we have $\alpha$, we can find the intersection points in the following way: if we take vector $\vv{C_1C_2}$, resize it to have length $r_1$, then rotate by $\alpha$ in either direction, this gives the vectors from $C_1$ to either intersection points.
+
+\centerFig{cases2}
+
+This gives the following code. It uses a function \lstinline|abs()| to compute the length of a vector (see section~\ref{ss:point-representation}) and a function \lstinline|rot()| to rotate a vector by a given angle (see section~\ref{ss:rotation}).
+\begin{lstlisting}
+bool circleCircle(pt c1, double r1, pt c2, double r2, pair<pt,pt> &out) {
+    double d = abs(c2-c1);
+    if (d < abs(r2-r1) || d > r1+r2) // triangle inequalities
+        return false;
+    double alpha = acos((d*d + r1*r1 - r2*r2)/(2*d*r1));
+    pt rad = (c2-c1)/d*r1; // vector C1C2 resized to have length d
+    out = {c1 + rot(rad, -alpha), c1 + rot(rad, alpha)};
+    return true;
+}
+\end{lstlisting}
+
+This implementation is quite nice, but unfortunately it will sometimes output \lstinline|nan| values. In particular, if
+\[r_1 = 0.625 \qquad r_2 = 0.3750000000000004 \qquad d = 1.0000000000000004\]
+then the triangle inequalities are respected, so the function returns \lstinline|true|, but the program computes
+\[\frac{d^2 + r_1^2 - r_2^2}{2dr_1} > 1\]
+
+In fact, this is mathematically impossible! The cosine rule should give values in $[-1,1]$ as long as the edge lengths respect the triangle inequality. To make sure, we can compute:
+\begin{align*}
+\frac{d^2 + r_1^2 - r_2^2}{2dr_1} > 1\ 
+&\Rightarrow\ d^2 + r_1^2 - r_2^2 > 2dr_1\\
+&\Leftrightarrow\ (d-r_1)^2 > r_2^2\\
+&\Leftrightarrow\ |d-r_1| > r_2\\
+&\Leftrightarrow\ d > r_2+r_1 \quad\mbox{or}\quad r_1 > d+r_2
+\end{align*}
+Indeed, both are impossible because of the triangle inequalities. So this must be the result of a few unfortunate roundings made while computing the expression.
+
+There are two possible solutions to this. The first solution would be to just treat the symptoms: make sure the cosine is never outside $[-1,1]$ by either returning \lstinline|false| or by moving it inside:
+\begin{lstlisting}
+double co = (d*d + r1*r1 - r2*r2)/(2*d*r1);
+if (abs(co) > 1) {
+    return false; // option 1
+    co /= abs(co); // option 2
+}
+double alpha = cos(co);
+\end{lstlisting}
+
+The second solution, which we recommend, is based on the principles that we should always try to minimize the number of comparisons we make, and that if we have to do some computation that might fail (giving a result of \lstinline|nan| or infinity), then we should test the input of that computation \emph{directly}.
+
+So instead of testing the triangle inequalities, we test the value of $\cos\alpha$ directly, because it turns out that it will be in $[-1,1]$ iff the triangle inequalities are verified. This gives the following code, which is a bit simpler and safer.
+\begin{lstlisting}
+bool circleCircle(pt c1, double r1, pt c2, double r2, pair<pt,pt> &out) {
+    double d = abs(c2-c1), co = (d*d + r1*r1 - r2*r2)/(2*d*r1);
+    if (abs(co) > 1) return false;
+    double alpha = acos(co);
+    pt rad = (c2-c1)/d*r1; // vector C1C2 resized to have length d
+    out = {c1 + rot(rad, -alpha), c1 + rot(rad, alpha)};
+    return true;
+}
+\end{lstlisting}

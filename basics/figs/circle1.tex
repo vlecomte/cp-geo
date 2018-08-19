@@ -1,0 +1,17 @@
+\begin{tikzpicture}[scale=0.6]
+\coordinate (o) at (0,0);
+\coordinate (a) at (0,2.5);
+\coordinate (b) at (-2,-1.5);
+\coordinate (c) at (2.5,0);
+\draw (o) circle [radius=2.5];
+\draw[gray] (o) -- (a);
+\draw[gray] (o) -- (b);
+\draw[gray] (o) -- (c);
+\tkzMarkSegment[color=gray, pos=.5, mark=||](o,a);
+\tkzMarkSegment[color=gray, pos=.5, mark=||](o,b);
+\tkzMarkSegment[color=gray, pos=.5, mark=||](o,c);
+\node[point, label=below:{$O$}] at (o) {};
+\node[point, label=above:{$A$}] at (a) {};
+\node[point, label=left:{$B$}] at (b) {};
+\node[point, label=right:{$C$}] at (c) {};
+\end{tikzpicture}

@@ -1,0 +1,13 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1.6]
+    \coordinate (O) at (0,0,0);
+    \drawSphere{1}{22.5}{22.5}{.4}
+    \coordinate (P) at (-0.001,0.622,0.783); % actual coordinates (rotated 90 degrees East to be in front)
+    \coordinate (Q) at (0.730,-0.392,0.560);
+    \coordinate (G) at (0.212,0.231,0.949);
+    \tdplotdefinepoints(0,0,0)(-0.001,0.622,0.783)(0.730,-0.392,0.560)
+    \tdplotdrawpolytopearc[thick]{1}{}{}
+    \node[point,label=right:{London}] at (P) {};
+    \node[point,label=left:{Los Angeles}] at (Q) {};
+    \node[above=.6cm] (Gr) at (G) {Greenland};
+    \draw[thin] (G) -- (Gr);
+\end{tikzpicture}

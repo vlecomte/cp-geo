@@ -1,0 +1,26 @@
+\newcommand{\fig}[5]{%
+    \begin{tikzpicture}[tdplot_main_coords, scale=1.1]
+        \coordinate (P1) at (1,0,0);
+        \coordinate (P2) at (0,1,0);
+        \coordinate (P3) at (0,0,0);
+        \coordinate (O) at (.6,.2,-1);
+        
+        #1
+        \draw[gray, semithick, dotted] (O) -- (P1) (O) -- (P2) (O) -- (P3);
+        \node[point, label=left:{$O$}] at (O) {};
+        %\node[left] at (O) {$O$};
+        \fill[#2, opacity=.8] (P1) -- (P2) -- (P3);
+        \draw (P1) node[left] {#4} -- (P2) node[right] {$P_1$} -- (P3) node[above left, yshift=-.1cm, xshift=.05cm] {#3} -- cycle;
+        #5
+    \end{tikzpicture}
+}%
+\begin{tabu} to .75\linewidth {X[c]X[c]}
+    \fig{}{posBack}{$P_2$}{$P_3$}{
+        \draw[-stealth] (.333,.333,0) -- ++(0,0,.8) node[right] {$\vv{S}$};
+    } &
+    \fig{
+        \draw[-stealth] (.333,.333,0) -- ++(0,0,-.8) node[right] {$\vv{S}$};
+    }{negBack}{$P_3$}{$P_2$}{} \\
+    $\vv{S}$ away from $O$ & $\vv{S}$ towards $O$ \\
+    $+$ volume of $OP_1P_2P_3$ & $-$ volume of $OP_1P_2P_3$ \\
+\end{tabu}

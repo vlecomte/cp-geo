@@ -1,0 +1,24 @@
+% dotProductCases
+\newcommand{\vw}[2]{
+    \tkzDefPoints{0/0/O, #1/V, #2/W}
+    \tkzDrawVectors(O,V O,W)
+    \tkzMarkAngle[size=.6cm](V,O,W)
+    \tkzLabelSegment[below](O,V){$\vv{v}$}
+    \tkzLabelAngle[pos=.9](V,O,W){$\theta$}
+}%
+\begin{tabu} to .9\linewidth {X[c]X[c]X[c]}
+    \begin{tikzpicture}[scale=0.7]
+        \vw{3/1}{1/2}
+        \tkzLabelSegment[left](O,W){$\vv{w}$}
+    \end{tikzpicture}&
+    \begin{tikzpicture}[scale=0.7]
+        \vw{3/1}{-.71/2.12}
+        \tkzLabelSegment[left](O,W){$\vv{w}$}
+    \end{tikzpicture}&
+    \begin{tikzpicture}[scale=0.7]
+        \vw{3/1}{-2/1}
+        \tkzLabelSegment[below](O,W){$\vv{w}$}
+    \end{tikzpicture}\\
+    $\theta < \pi/2$ & $\theta = \pi/2$ & $\theta > \pi/2$\\
+    $\dotv{v}{w} = 5$ & $\dotv{v}{w} = 0$& $\dotv{v}{w} = -5$\\
+\end{tabu}

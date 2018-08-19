@@ -1,0 +1,13 @@
+\input{tikz/precision-setup}
+\newcommand{\fig}[1]{
+    \begin{tikzpicture}[scale=0.35]
+    \figBasisCircleCircle
+    \tkzDefPoint(2.7,0){R}
+    \tkzDrawVectors(#1)
+    \end{tikzpicture}
+}%
+\tabulinesep=1mm%
+\begin{tabu} to .9\linewidth {X[c]X[c]X[c]}
+\fig{C1,R} & \fig{C1,I} & \fig{C1,J} \\
+resized & rotated right & rotated left \\
+\end{tabu}

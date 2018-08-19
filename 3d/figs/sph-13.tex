@@ -1,0 +1,45 @@
+\newcommand{\fig}[2]{%
+    \begin{tikzpicture}[tdplot_main_coords, scale=1.5]
+        #1
+        \coordinate (O) at (0,0,0);
+        \coordinate (A) at (1.000,0.000,0.000); % 0,0
+        \coordinate (B) at (0.707,0.707,0.000); % 0,45
+        \coordinate (C) at (0.653,0.653,0.383); % 22.5,45
+        \tdplotdefinepoints(0,0,0)(1.000,0.000,0.000)(0.707,0.707,0.000) % AB
+        \tdplotdrawpolytopearc[thick]{1}{}{}
+        \tdplotdefinepoints(1.000,0.000,0.000)(.85,1,0.000)(.9,0.653,0.383) % I'm just making those up so it looks okay on the figure
+        \tdplotdrawpolytopearc[thick]{.4}{right,yshift=.05cm}{$\theta$}
+        \node[point,label=right:{$B$}] at (B) {};
+        #2
+        \tdplotdefinepoints(0,0,0)(1.000,0.000,0.000)(0.653,0.653,0.383) % AC
+        \tdplotdrawpolytopearc[thick]{1}{}{}
+        \node[point,label=left:{$A$}] at (A) {};
+        \node[point,label=right:{$C$}] at (C) {};
+    \end{tikzpicture}
+}%
+\begin{tabu} to .8\linewidth {X[.7,c]X[c]}
+    \fig{
+        \drawSphere{1}{22.5}{22.5}{.4}
+    }{} &
+    \fig{
+        \pgfmathsetmacro{\w}{1.4}
+        \pgfmathsetmacro{\wLine}{\w*1.2}
+        \pgfmathsetmacro{\t}{0.383/0.653}
+        \pgfmathsetmacro{\h}{\w*\t}
+        \pgfmathsetmacro{\off}{.3}
+        \fill[lg, opacity=.8] (\w,\w,0) -- (\off-\w,\w,0) -- (\off-\w,-\w,0) -- (\w,-\w,0) -- cycle;
+        \draw[thick] (O) -- (B);
+    }{
+        \fill[lg, opacity=.8] (\w,\w,\h) -- (\off-\w,\w,\h) -- (\off-\w,-\w,-\h) -- (\w,-\w,-\h) -- cycle;
+        %\draw[thin] (-\w,0,0) -- (\w,0,0);
+        \draw[semithick] (\off-\wLine,0,0) -- (\wLine,0,0);
+        \draw[thick] (O) -- (A) (O) -- (C);
+        \node[point,label=above:{$O$}] at (O) {};
+        \pgfmathsetmacro{\le}{.8}
+        \draw[thick,-stealth] (\off-.7,-1,0) -- ++(0,0,\le) node[pos=.7,left] {$A \times B$};
+        \pgfmathsetmacro{\a}{\le*\t/(1+\t*\t)}
+        \pgfmathsetmacro{\b}{\le*1/(1+\t*\t)}
+        \draw[thick,-stealth] (\off-.7,1,\t) -- ++(0,-\a,\b) node[pos=.8,right] {$A \times C$};
+    } \\
+    angle $ABC$ & planes $OAB$, $OAC$ \\
+\end{tabu}

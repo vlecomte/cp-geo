@@ -1,0 +1,81 @@
+\section{Angles between planes and lines}\label{s:angles}
+In this section, we figure out how to check whether lines and planes are parallel or perpendicular, and then how to find the line perpendicular to a plane going through a given point, and vice versa. All those operations are very easy with our representation of planes and lines.
+
+\subsection{Between two planes}
+The angle between two planes is equal to the angle between their normals. Since usually two angles of distinct amplitudes $\theta$ and $\pi-\theta$ are formed, we take the smaller of the two, in $[0,\frac{\pi}{2}]$.
+
+\centerFig{para-perp-0}
+
+We can find it with the following code. We take the minimum with 1 to avoid \lstinline|nan| in case of imprecisions.
+\begin{lstlisting}
+double smallAngle(p3 v, p3 w) {
+    return acos(min(abs(v|w)/abs(v)/abs(w), 1.0));
+}
+double angle(plane p1, plane p2) {
+    return smallAngle(p1.n, p2.n);
+}
+\end{lstlisting}
+
+In particular, we can check whether two planes are parallel/perpendicular by checking if their normals are parallel/perpendicular:
+\begin{lstlisting}
+bool isParallel(plane p1, plane p2) {
+    return p1.n*p2.n == zero;
+}
+bool isPerpendicular(plane p1, plane p2) {
+    return (p1.n|p2.n) == 0;
+}
+\end{lstlisting}
+
+\subsection{Between two lines}
+The situation with lines is exactly the same: their angle is equal to the angle between their direction vectors. Note that the lines aren't necessarily in the same plane, so the angle is taken as if they were moved until they touch.
+
+\centerFig{para-perp-1}
+
+\begin{lstlisting}
+double angle(line3d l1, line3d l2) {
+    return smallAngle(l1.d, l2.d);
+}
+bool isParallel(line3d l1, line3d l2) {
+    return l1.d*l2.d == zero;
+}
+bool isPerpendicular(line3d l1, line3d l2) {
+    return (l1.d|l2.d) == 0;
+}
+\end{lstlisting}
+
+\subsection{Between a plane and a line}
+The situation when considering a plane and a line is a bit different.
+Let's consider a plane $\Pi$ of normal $\vv{n}$ and a line $l$ of direction vector $\vv{d}$.
+When they are perpendicular, $\vv{n}$ is parallel to $\vv{d}$, and inversely when they are parallel, $\vv{n}$ is perpendicular to $\vv{d}$. In general, if the angle between $\vv{n}$ and $\vv{d}$ is $\theta \in [0,\frac{\pi}{2}]$, then the angle between the plane and the line is $\frac{\pi}{2}-\theta$.
+
+\centerFig{para-perp-2}
+
+\begin{lstlisting}
+double angle(plane p, line3d l) {
+    return M_PI/2 - smallAngle(p.n, l.d);
+}
+bool isParallel(plane p, line3d l) {
+    return (p.n|l.d) == 0;
+}
+bool isPerpendicular(plane p, line3d l) {
+    return p.n*l.d == zero;
+}
+\end{lstlisting}
+
+\subsection{Perpendicular through a point}
+The line perpendicular to a plane $\Pi$ of normal $\vv{n}$ and going through a point $O$ is simply the line going through $O$ and whose direction vector is $\vv{n}$, or equivalently the line going through $O$ and $O+\vv{n}$.
+
+
+\centerFig{para-perp-3}
+
+\begin{lstlisting}
+line3d perpThrough(plane p, p3 o) {return line(o, o+p.n);}
+\end{lstlisting}
+
+The plane perpendicular to a line $l$ of direction vector $\vv{d}$ and going through a point $O$ is simply the plane containing $O$ and whose normal is $\vv{d}$.
+
+\centerFig{para-perp-4}
+
+\begin{lstlisting}
+plane perpThrough(line3d l, p3 o) {return plane(l.d, o);}
+\end{lstlisting}

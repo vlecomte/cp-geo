@@ -1,0 +1,83 @@
+\section{Transformations}
+In this section we will show how to implement three transformations of the plane, in increasing difficulty. We will see that they all correspond to linear transformations on complex numbers, that is, functions of the form $f(p) = a \ast p + b$ for $a,b,p \in \complex$, and deduce a way to compute a general transformation that combines all three.
+
+\subsection{Translation}
+To translate an object by a vector $\vv{v}$, we simply need to add $\vv{v}$ to every point in the object. The corresponding function is $f(p) = p + \vv{v}$ with $\vv{v} \in \complex$.
+
+\centerFig{transfo0}
+
+The implementation is self-explanatory:
+\begin{lstlisting}
+pt translate(pt v, pt p) {return p+v;}
+\end{lstlisting}
+
+\subsection{Scaling}
+To scale an object by a certain ratio $\alpha$ around a center $c$, we need to shorten or lengthen the vector from $c$ to every point by a factor $\alpha$, while conserving the direction.
+The corresponding function is $f(p) = c + \alpha(p-c)$ ($\alpha$ is a real here, so this is a scalar multiplication).
+%This is also a linear transformation on complex numbers: we can write $f(x) = \alpha \ast x + (1-\alpha)p$.
+
+\centerFig{transfo1}
+
+Again, the implementation is just a translation of the expression into code:
+\begin{lstlisting}
+pt scale(pt c, double factor, pt p) {
+    return c + (p-c)*factor;
+}
+\end{lstlisting}
+
+\subsection{Rotation}\label{ss:rotation}
+To rotate an object by a certain angle $\phi$ around center $c$, we need to rotate the vector from $c$ to every point by $\phi$. From our study of polar coordinates in \ref{polar-form} we know this is equivalent to multiplying by $\cis\phi$, so the corresponding function is $f(p) = c + \cis\phi\ast(p-c)$.
+
+\centerFig{transfo2}
+
+In particular, we will often use the (counter-clockwise) rotation centered on the origin. We use complex multiplication to figure out the formula:
+\begin{align*}
+(x+yi)\ast\cis\phi &= (x+yi)\ast(\cos\phi + i\sin\phi) \\
+&= (x\cos\phi - y\sin\phi) + (x\sin\phi + y\cos\phi)i
+\end{align*}
+which gives the following implementation:
+\begin{lstlisting}
+pt rot(pt p, double a) {
+    return {p.x*cos(a) - p.y*sin(a), p.x*sin(a) + p.y*cos(a)};
+}
+\end{lstlisting}
+which if using \lstinline|complex| can be simplified to just
+\begin{lstlisting}
+pt rot(pt p, double a) {return p * polar(1.0, a);}
+\end{lstlisting}
+
+And among those, we will use the rotation by $90\degree$ quite often:
+\begin{align*}
+(x+yi)\ast\cis(90\degree) &= (x+yi)\ast(\cos(90\degree) + i\sin(90\degree)) \\
+&= (x+yi)\ast i = -y+xi
+\end{align*}
+It works fine with integer coordinates, which is very useful:
+\begin{lstlisting}
+pt perp(pt p) {return {-p.y, p.x};}
+\end{lstlisting}
+
+\subsection{General linear transformation}
+It is easy to check that all those transformations are of the form $f(p) = a \ast p + b$ as claimed in the beginning of this section. In fact, all transformations of this type can be obtained as combinations of translations, scalings and rotations.\footnote{Actually, if $a = 1$ it is just a translation, and if $a \neq 1$ it is the combination of a scaling and a rotation combination from a well-chosen center.}
+
+Just like for real numbers, to determine a linear transformation such as this one, we only need to know the image of two points to know the complete function. Indeed, if we know $f(p) = a \ast p + b$ and $f(q) = a \ast q + b$, then we can find $a$ as $\frac{f(q)-f(p)}{q-p}$, and then $b$ as $f(p) - a \ast p$.
+
+And thus if we want to know a new point $f(r)$ of that transformation, we can then compute it as:
+\[f(r) = f(p) + (r-p) \ast \frac{f(q)-f(p)}{q-p}\]
+
+%Note that the triangles $pqr$ and $f(p)f(q)f(r)$ formed this way are similar:
+\centerFig{transfo3}
+
+This is easy to implement using \lstinline|complex|:
+\begin{lstlisting}
+pt linearTransfo(pt p, pt q, pt r, pt fp, pt fq) {
+    return fp + (r-p) * (fq-fp) / (q-p);
+}
+\end{lstlisting}
+
+Otherwise, you can use the cryptic but surprisingly short solution from \cite{kactl} (see the next sections for \lstinline|dot()| and \lstinline|cross()|):
+\begin{lstlisting}
+pt linearTransfo(pt p, pt q, pt r, pt fp, pt fq) {
+    pt pq = q-p, num{cross(pq, fq-fp), dot(pq, fq-fp)};
+    return fp + pt{cross(r-p, num), dot(r-p, num)} / sq(pq);
+}
+\end{lstlisting}

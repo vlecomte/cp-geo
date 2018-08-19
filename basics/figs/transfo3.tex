@@ -1,0 +1,12 @@
+\begin{tikzpicture}
+\node[point] (P0) [label=below:{$p$}] at (0,0) {};
+\node[point] (Q0) [label=below:{$q$}] at (2,0) {};
+\node[point] (R0) [label=above:{$r$}] at (1.5,1) {};
+\draw[dashed, semithick] (P0) -- (Q0) -- (R0) -- (P0);
+\begin{scope}[gray]
+\node[point] (P1) [label=right:{$f(p)$}] at (-1,1) {};
+\node[point] (Q1) [label=right:{$f(q)$}] at (-1,2) {};
+\node[point] (R1) [label=left:{$f(r)$}] at (-1.5,1.75) {};
+\draw[dashed, semithick] (P1) -- (Q1) -- (R1) -- (P1);
+\end{scope}
+\end{tikzpicture}

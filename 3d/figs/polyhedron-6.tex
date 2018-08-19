@@ -1,0 +1,38 @@
+\newcommand{\fig}[2]{%
+    \begin{tikzpicture}[scale=1.4]
+        \tkzInit[xmin=-1.5,xmax=1.5,ymin=-.5,ymax=1.5]
+        \tkzClip
+        \tkzDefPoints{0/0/P, 0/1/Q, -1/.5/R, 1/0/S}
+        \fill[posBack, opacity=.8] (P) -- (R) -- (Q);
+        \fill[#1, opacity=.8] (P) -- (S) -- (Q);
+        \draw[line join=round] (P) -- (R) -- (Q) -- cycle;
+        \draw[line join=round] (P) -- (S) -- (Q);
+        \tkzInCenter(P,Q,R) \tkzGetPoint{O1}
+        \tkzInCenter(P,Q,S) \tkzGetPoint{O2}
+        \coordinate (A1) at ($(O1) + (180:1)$);
+        \coordinate (B1) at ($(O1) + (120:1)$);
+        \coordinate (A2) at ($(O2) + (180:1)$);
+        \coordinate (B2) at ($(O2) + (120:1)$);
+        \coordinate (A3) at ($(O2) + (0:1)$);
+        \coordinate (B3) at ($(O2) + (60:1)$);
+        
+        \tkzLabelPoints[below](P)
+        \tkzLabelPoints[above](Q)
+        \tkzLabelPoints[left](R)
+        \tkzLabelPoints[right](S)
+        #2
+    \end{tikzpicture}
+}%
+\begin{tabu} to .8\linewidth {X[c]X[c]}
+\fig{posBack}{
+    \tkzMarkAngle[arrows=->,size=.15](A1,O1,B1)
+    \tkzMarkAngle[arrows=->,size=.15](A2,O2,B2)
+} &
+\fig{negBack}{
+    \tkzMarkAngle[arrows=->,size=.15](A1,O1,B1)
+    \tkzMarkAngle[arrows=<-,size=.15](B3,O2,A3)
+} \\
+$[P,Q,R]$ and $[S,Q,P]$ & $[P,Q,R]$ and $[P,Q,S]$ \\
+$P\rightarrow Q$ vs $Q \rightarrow P$ & both $P\rightarrow Q$ \\
+\OK & \KO \\
+\end{tabu}

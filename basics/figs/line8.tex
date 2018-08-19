@@ -1,0 +1,19 @@
+\begin{tikzpicture}[scale=0.7]
+\tkzDefPoints{0/0/P, 2/1/Q, -2/1/T, -1/-.5/V}
+\tkzDefPointsBy[translation = from P to Q](T){}
+\tkzDefPointsBy[translation = from P to T](V){}
+
+\tkzDrawSegment[add=1 and 1, ->](P,Q)
+\tkzDrawSegment[add=1 and 1, ->](T,T')
+\tkzDrawVector(P,T)
+\tkzDrawPoints(V,V')
+
+\tkzLabelSegment[above, pos=.4](P,T){$\vv{t}$}
+\tkzLabelSegment[above, pos=1.5](P,Q){$l$}
+\tkzLabelSegment[below, sloped](P,Q){$ax+by = c$}
+\tkzLabelSegment[below, pos=1.7](T,T'){$l'$}
+\tkzLabelSegment[above, sloped](T,T'){$ax+by = c'$}
+
+\tkzLabelPoint[below](V){$P$}
+\tkzLabelPoint[above left](V'){$P+\vv{t}$}
+\end{tikzpicture}

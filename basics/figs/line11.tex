@@ -1,0 +1,26 @@
+\newcommand{\setup}[2]{
+    \tkzInit[xmin=-.6,xmax=4.5,ymin=#2,ymax=3]
+    \tkzClip
+    \tkzDefPoints{0/0/A, 4/2/B, 1/2/P}
+    \tkzDefPointBy[projection = onto A--B](P) \tkzGetPoint{proj}
+    \tkzDefPointBy[reflection = over A--B](P) \tkzGetPoint{refl}
+    
+    \tkzDrawSegment(P,#1)
+    \tkzMarkRightAngle(B,proj,P)
+    \tkzDrawSegments[->](A,B)
+    \tkzDrawPoints(P,#1)
+    
+    \tkzLabelPoints[above](P)
+    \tkzLabelPoint[below](#1){$P'$}
+    \tkzLabelSegment[pos=0.8, below](A,B){$l$}
+}%
+\begin{tabu} to .8\linewidth {X[c]X[c]}
+    \begin{tikzpicture}[scale=0.7]
+    \setup{proj}{-.5}
+    \end{tikzpicture} &
+    \begin{tikzpicture}[scale=0.7]
+    \setup{refl}{-1}
+    \tkzMarkSegments[mark=|](P,proj proj,refl)
+    \end{tikzpicture} \\
+    projection & reflection \\
+\end{tabu}

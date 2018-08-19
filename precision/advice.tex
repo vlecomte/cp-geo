@@ -1,0 +1,27 @@
+\section{Some advice}
+In this last section, we present some general advice about precision issues when solving or setting a problem.
+
+\subsection{For problem solvers}
+One of the keys to success in geometry problems is to develop a reliable implementation methodology as you practise. Here are some basics to get you started.
+
+As you have seen in this chapter, using floating-point numbers can cause many problems and betray you in countless ways. Therefore the first and most important piece of advice is to avoid using them altogether. Surprisingly many geometric computations can be done with integers, and you should always aim to perform important comparisons with integers, by first figuring out the formula on paper and then implementing it without division or square root.
+
+When you are forced to use floating-point numbers, you should minimize the risks you take. Indeed, thinking about everything that could go wrong in an algorithm is very hard and tedious, so if you take many inconsiderate risks, the time you will need to spend too much time on verification (or not spend it and suffer the consequences). In particular:
+\begin{itemize}
+\item Minimize the number of dangerous operations you make, such as divisions, square roots, and trigonometric functions. Some of these functions can amplify precision mistakes, and many are defined on restricted domains. Make sure you do not go out of the domains by considering every single one of them carefully.
+\item Separate cases sparingly. Many geometry problems require some casework, making comparisons to separate them can be unsafe, and every case adds more code and more reasons for failures. When possible, try to write code that handles many situations at once.
+\item Do not rely too much on mathematical truths. Things that are true for reals are not necessarily true for floating-point numbers. For example, $r^2-d^2$ and $(r+d)(r-d)$ are not always exactly the same value. Be extra careful when those values are then used in an operation that is not defined everywhere (like $\sqrt{x}$, $\arccos(x)$, $\tan(x)$, $\frac{x}{y}$ etc.).
+\end{itemize}
+
+In general, try to build programs that are resistant to the oddities of floating-point numbers. Imagine that some evil demon is slightly modifying every result you compute in the way that is most likely to make your program fail. And try to write clean code that is \emph{clearly correct} at first glance. If you need long explanations to justify why your program will not fail, then it is more likely that your program will in fact fail.
+
+\subsection{For problem setters}
+Finally, here is some general advice about precision issues when creating a geometry problem and its datasets.
+\begin{itemize}
+\item Never use floating-point numbers as inputs, as this will already cause imprecisions when first reading the input numbers, and completely exclude the use of integers make it impossible to determine some things with certainty, like whether two segmentns touch, whether some points are collinear, etc.
+\item Make the magnitude of the input coordinates as small as possible to avoid causing overflows or big imprecisions in the contestant's codes.
+\item Favor problems where the important comparisons can be made entirely with integers.
+\item Avoid situations in which imprecise points are used for numerically unstable operations such as finding the intersection of two lines.
+\item In most cases, you should specify the tolerance in terms of absolute error only (see subsection~\ref{ss:abs-rel}).
+\item Make sure to prove that all correct algorithm are able to reach the precision that you require, and be careful about operations like circle-line intersection which can greatly amplify imprecisions. Since error analysis is more complicated than it seems at first sight and requires a bit of expertise, you may want to ask a friend for a second opinion.
+\end{itemize}

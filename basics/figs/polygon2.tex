@@ -1,0 +1,39 @@
+\tikz{
+    \coordinate (O) at (0.5,0) {};
+    \coordinate (A) at (2,1) {};
+    \coordinate (B) at (3,1) {};
+    \coordinate (C) at (3,2) {};
+    \coordinate (D) at (1,2) {};
+}%
+\newcommand{\drawABCD}{
+    \draw (A) -- (B) -- (C) -- (D) -- cycle;
+    \node[point] at (O) {};
+    %\node[point] [label=below:{$O$}] at (O) {};
+    \node[point] at (A) {};
+    \node[point] at (B) {};
+    \node[point] at (C) {};
+    \node[point] at (D) {};
+}%
+\newcommand{\drawArrow}{
+    \draw[decoration={markings, mark=at position 0.5 with {\arrow{>}}}, postaction={decorate}]
+}%
+\begin{tikzpicture}
+\fill[red!25] (O) -- (A) -- (B) -- cycle;
+\drawArrow (A) -- (B);
+\drawABCD
+\end{tikzpicture}
+\begin{tikzpicture}
+\fill[blue!25] (O) -- (B) -- (C) -- cycle;
+\drawArrow (B) -- (C);
+\drawABCD
+\end{tikzpicture}
+\begin{tikzpicture}
+\fill[blue!25] (O) -- (C) -- (D) -- cycle;
+\drawArrow (C) -- (D);
+\drawABCD
+\end{tikzpicture}
+\begin{tikzpicture}
+\fill[red!25] (O) -- (D) -- (A) -- cycle;
+\drawArrow (D) -- (A);
+\drawABCD
+\end{tikzpicture}

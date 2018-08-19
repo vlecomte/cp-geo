@@ -1,0 +1,165 @@
+% Imports
+\usepackage{amsmath,amssymb,amsthm,answers,booktabs,color,esvect,fancyhdr,
+    framed,listings,mathtools,multicol,pbox,pdfpages,tabu,tikz,tikz-3dplot,
+    tkz-euclide,varwidth}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}[2012/02/15]
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+\usepackage[inline]{enumitem}
+\usepackage[squaren,Gray]{SIunits}
+\usepackage[many]{tcolorbox}
+\usepackage{biblatex}
+\addbibresource{cite.bib}
+
+% Color scheme
+\definecolor{accent}{rgb}{0,0,1}
+\definecolor{accentBack}{rgb}{.75,.75,1}
+\definecolor{pos}{rgb}{0,0,1}
+\definecolor{posBack}{rgb}{.75,.75,1}
+\newcommand{\posName}{blue}
+\definecolor{neg}{rgb}{1,0,0}
+\definecolor{negBack}{rgb}{1,.75,.75}
+\newcommand{\negname}{red}
+\definecolor{colorOK}{rgb}{0,.4,0}
+\definecolor{colorKO}{rgb}{.8,0,0}
+\definecolor{lg}{rgb}{.8,.8,.8}
+
+% Utilities
+\newcommand{\todo}[1]{\textbf{TODO:} #1}
+\newcommand{\term}[1]{\emph{#1}}
+\newcommand{\textOK}[1]{\textcolor{colorOK}{#1}}
+\newcommand{\textKO}[1]{\textcolor{colorKO}{#1}}
+\newcommand{\OK}{\textOK{OK}}
+\newcommand{\KO}{\textKO{KO}}
+\newcommand{\spoiler}[1]{{\color{gray}(select to reveal)} {\color{white} #1}}
+\newcommand{\ttt}[1]{\texttt{#1}}
+\newcommand{\includeFig}[1]{\includegraphics{figs-out/#1}}
+\newcommand{\centerFig}[1]{
+    \begin{center}
+    \includeFig{#1}
+    \end{center}
+}
+
+% Math operators
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\norm}{\|}{\|}
+\DeclarePairedDelimiter{\abs}{|}{|}
+\DeclareMathOperator{\orient}{orient}
+\DeclareMathOperator{\acos}{acos}
+\DeclareMathOperator{\atanTwo}{atan2}
+\DeclareMathOperator{\cis}{cis}
+\DeclareMathOperator{\perpop}{perp}
+\DeclareMathOperator{\side}{side}
+\DeclareMathOperator{\round}{round}
+\DeclareMathOperator{\dist}{dist}
+\newcommand{\real}{\mathbb{R}}
+\newcommand{\complex}{\mathbb{C}}
+\newcommand{\turn}{2\pi}
+\newcommand{\half}{\pi}
+\newcommand{\quarter}{\frac{\pi}{2}}
+\newcommand{\conj}[1]{\overline{#1}}
+\newcommand{\proj}[2]{\pi_{#1}(#2)}
+\newcommand{\projv}[2]{\proj{\vv{#1}}{\vv{#2}}}
+\newcommand{\normv}[1]{\norm{\vv{#1}}}
+\newcommand{\dotv}[2]{\vv{#1}\cdot\vv{#2}}
+\newcommand{\crossv}[2]{\vv{#1}\times\vv{#2}}
+\newcommand{\dir}{\vv{v}}
+\newcommand{\dirof}[1]{\vv{v_{#1}}}
+\newcommand{\intbis}{l_\mathrm{int}}
+\newcommand{\extbis}{l_\mathrm{ext}}
+\renewcommand{\phi}{\varphi}
+\newcommand{\nth}{^{\mathrm{th}}}
+\newcommand{\eMach}{\epsilon_{\mathrm{machine}}}
+\newcommand{\lint}{{\intbis(l_1,l_2)}}
+\newcommand{\lext}{{\extbis(l_1,l_2)}}
+
+
+% Listings
+\usepackage[scaled=0.8]{DejaVuSansMono}
+\lstset{
+    language=C++,
+    basicstyle=\ttfamily,
+    commentstyle=\it\ttfamily\color{gray},
+    keywordstyle=\bf\ttfamily,
+    stringstyle=\color{gray},
+    showstringspaces=false,
+    breaklines=true,
+    morekeywords={decltype},
+    frame=single
+}
+
+% Spacing
+\setlength{\parskip}{.4em plus.1em minus.1mm}
+\setlist{topsep=-0.1em,itemsep=-.2em}
+\tabulinesep=.1cm
+
+% Box environments
+\newtcolorbox{mybox}[1]{
+    tikznode boxed title,
+    enhanced,
+    arc=2mm,
+    interior style={white},
+    attach boxed title to top center= {yshift=-\tcboxedtitleheight/2},
+    fonttitle=\bfseries,
+    colbacktitle=white,coltitle=black,
+    boxed title style={size=normal,colframe=white,boxrule=0pt},
+    title={#1}}
+\newenvironment{mathy}{\begin{mybox}{Math insight}}{\end{mybox}}
+\newenvironment{warning}{\begin{mybox}{Warning}}{\end{mybox}}
+\newenvironment{trick}{\begin{mybox}{Implementation trick}}{\end{mybox}}
+\newenvironment{myc}{\begin{varwidth}{\textwidth}\centering}{\end{varwidth}}
+\newcommand{\vc}[2]{
+    \begin{myc}
+    #1
+    
+    #2
+    \end{myc}
+}
+
+% Exercises
+\Newassociation{sol}{Solution}{solutions}
+\newcounter{ExerciseCounter}
+\newenvironment{exerciseMain}{
+    \begin{mybox}{Exercise \arabic{ExerciseCounter}}
+}{
+    \end{mybox}
+}
+\newenvironment{exerciseAppendix}[1]{
+    \hypertarget{sol:#1}{}
+    \begin{mybox}{Exercise \ref{ex:#1}}
+}{
+    \end{mybox}
+}
+\newcommand{\exo}[1]{
+    \stepcounter{ExerciseCounter}
+    \begin{exerciseMain}
+    #1
+    \end{exerciseMain}
+}
+
+\newcommand{\exoWithSolution}[3]{
+    \refstepcounter{ExerciseCounter}\label{ex:#3}
+    \begin{exerciseMain}
+        #1
+        
+        \flushright {\color{gray}\hyperlink{sol:#3}{[Go to solution]}}
+    \end{exerciseMain}
+    
+    \Writetofile{solutions}{
+        \protect \begin{exerciseAppendix}{#3}
+            #1
+        \protect \end{exerciseAppendix}
+        #2
+        
+        \protect\begin{flushright}
+            \protect\color{gray} \protect\hyperref[ex:#3]{[Back to exercise]}
+        \protect\end{flushright}
+    }
+}
+
+% Theorems and definitions
+\newtheorem{assum}{Assumption}
+\newtheorem{mydef}{Definition}
+\newtheorem{thm}{Theorem}
+\newtheorem{lemma}{Lemma}

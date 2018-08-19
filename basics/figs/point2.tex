@@ -1,0 +1,11 @@
+\begin{tikzpicture}[scale=0.5]
+\draw[->] (-3,0) -- (7,0);
+\draw[->] (0,-3) -- (0,5);
+\coordinate (orig) at (0,0);
+\coordinate (right) at (1,0);
+\node[point] (P) [label=right:{$a+bi$}] at (5,3) {};
+\draw[->] (0,0) -- (P) node[pos=.5, sloped, above] {$r=\sqrt{a^2+b^2}$};
+\pic[draw, ->, angle radius=.8cm, "$\phi$", angle eccentricity=1.5] {angle=right--orig--P};
+\draw (5,0.2) -- (5,-0.2) node [below] {$r \cos\phi$};
+\draw (0.2,3) -- (-0.2,3) node [left] {$(r\sin\phi)i$};
+\end{tikzpicture}

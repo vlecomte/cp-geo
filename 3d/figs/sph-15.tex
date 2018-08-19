@@ -1,0 +1,38 @@
+\newcommand{\fig}[3]{%
+    \begin{tikzpicture}[tdplot_main_coords, scale=1.5]
+        #1
+        \drawSphere{1}{22.5}{22.5}{.2}
+        \coordinate (O) at (0,0,0);
+        \coordinate (A) at (1.000,0.000,0.000); % 0,0
+        \coordinate (B) at (0.707,0.707,0.000); % 0,45
+        \coordinate (C) at (0.354,0.854,0.383); % 22.5,67.5
+        \coordinate (D) at (0.653,0.271,0.707); % 45,22.5
+        \tdplotdefinepoints(0,0,0)(1.000,0.000,0.000)(0.707,0.707,0.000) % AB
+        \myFrontArc{#3}{1}{}{}{#2}
+        \tdplotdefinepoints(0,0,0)(0.707,0.707,0.000)(0.354,0.854,0.383) % BC
+        \myFrontArc{#3}{1}{}{}{#2}
+        \tdplotdefinepoints(0,0,0)(0.354,0.854,0.383)(0.653,0.271,0.707) % CD
+        \myFrontArc{#3}{1}{}{}{#2}
+        \tdplotdefinepoints(0,0,0)(0.653,0.271,0.707)(1.000,0.000,0.000) % DA
+        \myFrontArc{#3}{1}{}{}{#2}
+        \node[point,label=left:{$A$}] at (A) {};
+        \node[point,label=below:{$B$}] at (B) {};
+        \node[point,label=right:{$C$}] at (C) {};
+        \node[point,label=above:{$D$}] at (D) {};
+    \end{tikzpicture}
+}%
+\begin{tabu} to .8\linewidth {X[c]X[c]} 
+    \fig{}{fill=posBack,draw=posBack}{
+        thick,decoration={markings, mark=at position 0.5 with {\arrow[scale=1.2]{>}}}, postaction={decorate}
+    } &
+    \fig{
+        \begin{pgfonlayer}{behind}
+            \begin{scope}[tdplot_screen_coords]
+                \fill[posBack] (0,0) circle (1);
+            \end{scope}
+        \end{pgfonlayer}
+    }{fill=white,draw=white}{
+        thick,decoration={markings, mark=at position 0.5 with {\arrow[scale=1.2]{<}}}, postaction={decorate}
+    } \\
+    area of $ABCD$ & area of $DCBA$ \\
+\end{tabu}

@@ -1,0 +1,31 @@
+\newcommand{\figPolygonProj}[3]{
+    \begin{tikzpicture}[tdplot_main_coords, scale=1.5]
+        \drawSphere{1}{22.5}{22.5}{.3}
+        \coordinate (O) at (0,0,0);
+        \coordinate (A) at (0.383,0.924,0.000);
+        \coordinate (B) at (0,1,0);
+        \coordinate (C) at (0.000,0.924,0.383);
+        \pgfmathsetmacro{\w}{1.7}
+        \pgfmathsetmacro{\t}{0.383/0.924}
+        \coordinate (A') at (\t*\w,\w,0);
+        \coordinate (B') at (0,\w,0);
+        \coordinate (C') at (0,\w,\t*\w);
+        \coordinate (O') at ($.333*(A')+.334*(B')+.333*(C')$);
+        \tdplotdefinepoints(0,0,0)(0.383,0.924,0.000)(0,1,0) % AB
+        \myFrontArc{thick}{1}{}{}{fill=#3,draw=#3}
+        \tdplotdefinepoints(0,0,0)(0,1,0)(0.000,0.924,0.383) % BC
+        \myFrontArc{thick}{1}{}{}{fill=#3,draw=#3}
+        \tdplotdefinepoints(0,0,0)(0.000,0.924,0.383)(0.383,0.924,0.000) % CA
+        \myFrontArc{thick}{1}{}{}{fill=white,draw=white}
+        \draw[thin, gray, dashed] (A) -- (A') (B) -- (B') (C) -- (C');
+        \begin{pgfonlayer}{middle}
+            \draw[thin,gray,dashed] (O) -- (A) (O) -- (B) (O) -- (C);
+        \end{pgfonlayer}
+        \fill[#1] (A') -- (B') -- (C');
+        \node[point] at (A) {};
+        \node[point] at (B) {};
+        \node[point] at (C) {};
+        \draw[thick, line join=round] (A') node[point] {} -- (B') node[point] {} -- (C') node[point] {} -- cycle;
+        #2
+    \end{tikzpicture}
+}

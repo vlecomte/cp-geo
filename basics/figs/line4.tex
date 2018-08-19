@@ -1,0 +1,16 @@
+\begin{tikzpicture}[scale=0.7]
+%\tkzDefPoints{0/0/O, 0/0/P, 2/1/Q, -.9/1.8/ab, -1.1/2.2/ab'}
+\tkzDefPoints{0/0/O, 0/0/P, 2/1/Q, -1.1/2.2/ab, -1/2/ab'}
+\tkzDefMidPoint(P,Q) \tkzGetPoint{M}
+\tkzDefPointBy[translation = from O to ab](M) \tkzGetPoint{Mup}
+\tkzDefPointBy[translation = from ab' to O](M) \tkzGetPoint{Mdown}
+
+\tkzDrawSegment[add=1 and 1, ->](P,Q)
+\tkzLabelSegment[above=-.05,sloped](P,Q){$\side_l(P) = 0$}
+%\node at (Mup) {};
+%\node at (Mdown){};
+\tkzLabelPoint[above=-.05](Mup){``positive side''}
+\tkzLabelPoint[below=-.05](Mup){$\side_l(P) > 0$}
+\tkzLabelPoint[above=-.05](Mdown){``negative side''}
+\tkzLabelPoint[below=-.05](Mdown){$\side_l(P) < 0$}
+\end{tikzpicture}

@@ -1,0 +1,15 @@
+\begin{tikzpicture}[tdplot_main_coords, scale=1.2]
+    \drawGrid{-1}{0}{-1}{3}
+    \draw[dashed] (-1.5,1,0) -- (0,1,0);
+    \fill[lg, opacity=.9] (0,3,-1.5) -- ++(0,0,3) node[right,black] {$\Pi_2$} -- ++(0,-4,0) -- ++(0,0,-3) -- cycle;
+    \drawGrid{0}{2}{-1}{3}
+    \coordinate (A) at (0,0,0);
+    \coordinate (B) at (0,1,0);
+    \draw (A) ++(0,0,-2) -- ++(0,0,4) node[right] {$l_2$};
+    \draw (0,1,0) -- ++(2.5,0,0) node[pos=.4,below,xshift=.2cm] {$l_1$};
+    \node[point,label=left:{$C_2$}] at (A) {};
+    \node[point,label={below,xshift=.2cm:{$C_1$}}] at (B) {};
+    \draw[-stealth] (0,-.5,.4) -- ++(0,0,1) node[pos=.5, left] {$\vv{d_2}$};
+    \draw[-stealth] (0,1.7,0) -- ++(0,1,0) node[pos=.5, above] {$\vv{n}$};
+    \draw[-stealth] (0,3.5,0) -- ++(-1,0,0) node[pos=.5, below, xshift=.2cm] {$\vv{n_2}$};
+\end{tikzpicture}

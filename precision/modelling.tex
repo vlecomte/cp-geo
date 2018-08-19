@@ -1,0 +1,105 @@
+\section{Modelling precision}
+In this section, we try to build a basic model of precision errors that we can use to obtain a rough but reliable estimate of a program's precision.
+
+\subsection{The issue with ``absolute or relative'' error}\label{ss:abs-rel}
+When the output of a problem is some real value like a distance or an area, the problem statement often specifies a constraint such as: ``The answer should be accurate to an absolute or relative error of at most $10^{-5}$.'' While considering the relative accuracy of an answer can be a useful and convenient way to specify the required precision of an answer in some cases (for example in tasks where only addition and multiplication of positive values are performed), we think that for most geometry problems it is unsuitable.
+
+The reason for this is the need to subtract\footnote{Strictly speaking, we mean both subtraction of values of the same sign, and addition of values of opposite signs.} large values of similar magnitude. For example, suppose that we are able to compute two values with relative precision $10^{-6}$, such as $A=1000 \pm 10^{-3}$ and $B = 999 \pm 10^{-3}$. If we compute their difference, we obtain $A-B = 1 \pm 2 \times 10^{-3}$. The absolute error remains of a comparable size, being only multiplied by 2, but on the other hand relative error increases drastically from $10^{-6}$ to $2\times 10^{-3}$ because of the decrease in magnitude. This phenomenon is called \emph{catastrophic cancellation}.
+
+In fact, whenever a certain relative error can affect big numbers, catastrophic cancellation can cause the corresponding absolute error to appear on very small values. The consequence is that if a problem statement has a certain tolerance on the relative error of the answer, and a correct solution has an error close to it for the biggest possible values, then the problem statement also needs to specify a tolerance on the corresponding absolute error in case catastrophic cancellation happens. And since that tolerance on absolute error is at least as tolerant as the tolerance on relative error for all possible values, it makes it redundant. This is why we think that tolerance on ``absolute or relative error'' is misleading at best.\footnote{In fact, working with relative error tolerances would make sense if this ``relative error'' was defined based on the magnitude of the input coordinates rather than on the magnitude of the answer, as we will see starting from section~\ref{ss:biggest-mag}. For example, if all input coordinates are bounded by $M$, it would make sense to require an absolute precision of $M^2\times 10^{-6}$ on an area. But since the answer can remain very small even if the magnitude of the input grows, requiring a fixed relative precision on it is usually too constraining for test cases with inputs of large magnitude.}
+
+Catastrophic cancellation shows that relative precision is not a reliable way to think about precision whenever subtractions are involved --- and that includes the wide majority of geometry problems.
+In fact, the most common geometric operations (distances, intersections, even dot/cross products) all involve subtractions of values which could be very similar in magnitude.
+
+Examples of this appear in two of the case studies of section~\ref{s:case-studies}: in problem ``Keeping the Dogs Apart'' and when finding the solution of a quadratic equation.
+
+Another example occurs when computing areas of polygons made of imprecise points. Even when the area ends up being small, the imprecision on it can be large if there were computations on large values in intermediate steps, which is the case when the coordinates have large magnitudes.
+
+\centerFig{modelling0}
+
+Because of this, we advise against trying to use relative error to build precision guarantees on the global scale of a whole algorithm, and we recommend to reason about those based on absolute error instead, as we describe below.
+
+\subsection{Precision guarantees from IEEE 754}
+%\emph{Note: This section is not meant to be a full description of how floating-point numbers work, but only a reminder of some useful guarantees. If you are completely unfamiliar with how floating-point numbers work or want to know more details, a good reference is \cite{goldberg-floating}.}
+
+Nearly all implementations of floating-point numbers obey the specifications of the IEEE 754 standard. This includes \lstinline|float| and \lstinline|double| in Java and C++, and \lstinline|long double| in C++. The IEEE 754 standard gives strong guarantees that ensure floating-point numbers will have similar behavior even in different languages and over different platforms, and gives users a basis to build guarantees on the precision of their computations.
+
+The basic guarantees given by the standard are:
+\begin{enumerate}
+\item decimal values entered in the source code or a file input are represented by the closest representable value;
+\item the five basic operations ($+,-,\times,/,\sqrt{x}$) are performed as if they were performed with infinite precision and then rounded to the closest representable value.
+\end{enumerate}
+
+There are several implications. First, this means that integers are represented exactly, and basic operations on them ($+,-,\times$) will have exact results, as long as they are small enough to fit within the significant digits of the type: $\geq 9\times 10^{15}$ for \lstinline|double|, and $\geq 1.8 \times 10^{19}$ for \lstinline|long double|. In particular, \lstinline|long double| can perform exactly all the operations that a 64-bit integer type can perform.
+
+Secondly, if the inputs are exact, the relative error on the result of any of those five operations ($+,-,\times,/,\sqrt{x}$) will be bounded by a small constant that depends on the number of significant digits in the type.\footnote{This assumes the magnitudes do not go outside the allowable range ($\approx 10^{\pm 308}$ for \lstinline|double| and $\approx 10^{\pm 4932}$ for \lstinline|long double|) which almost never happens for geometry problems.} This constant is $< 1.2 \times 10^{-16}$ for \lstinline|double| and $< 5.5 \times 10^{-20}$ for \lstinline|long double|. It is called the \emph{machine epsilon} and we will often write it $\epsilon$.
+
+\subsection{Considering the biggest possible magnitude}\label{ss:biggest-mag}
+We explained earlier why we need to work with absolute error, but since IEEE 754 gives us guarantees in terms of relative errors, we need to consider the biggest magnitude that will be reached during the computations. In other words, if all computations are precise up to a relative error of $\epsilon$, and the magnitude of the values never goes over $M$, then the absolute error of an operation is at most $M\epsilon$.
+
+This allows us to give good guarantees for numbers obtained after a certain number of $+$ and $-$ operations: a value that is computed in $n$ operations\footnote{Note that when we say a value is ``computed in $n$ operations'' we mean that it is computed by a single formula that contains $n$ operations, and not that $n$ operations are necessary to actually compute it. For example $(a+b)+(a+b)$ is considered to be ``computed in 3 operations'' even though we can implement this with only 2 additions.} will have an absolute error of at most $nM\epsilon$ compared to the theoretical result.
+%\footnote{By this we mean, a value that is computed by a single formula involving only $+$ and $-$ operations, and at most $n$ of them.}
+
+%To clarify what we mean here by ``computed in $n$ operations'', we define it this way:
+%\begin{itemize}
+%\item exact inputs are ``computed in $0$ operations'';
+%\item if $a$ is ``computed in $n_a$ operations'' and $b$ is ``computed in $n_b$ operations'' then the sum $a+b$ and subtraction $a-b$, is ``computed in $n_a+n_b+1$ operations''.
+%\end{itemize}
+
+
+
+We can prove the guarantee by induction: let's imagine we have two intermediate results $a$ and $b$ who were computed in $n_a$ and $n_b$ operations respectively. By the inductive hypothesis their imprecise computed values $a'$ and $b'$ respect the following conditions.
+\[|a'-a| \leq n_aM\epsilon \qquad |b'-b| \leq n_bM\epsilon\]
+
+The result of the floating-point addition of $a'$ and $b'$ is $\round(a'+b')$ where $\round()$ is the function that rounds a real value to the closest representable floating-point value. We know that $|\round(x)-x| \leq M\epsilon$, so we can find a bound on the error of the addition:
+\begin{align*}
+|\round(a'+b') &- (a+b)|\\
+&= \left|\left[\round(a'+b') - (a'+b')\right] + \left[(a'+b') - (a+b)\right]\right|\\
+&\leq |\round(a'+b') - (a'+b')| + |(a'+b') - (a+b)|\\
+&\leq M\epsilon + |(a'-a) + (b'-b)| \\
+&\leq M\epsilon + |a'-a| + |b'-b| \\
+&\leq M\epsilon + n_aM\epsilon + n_bM\epsilon \\
+&= (n_a + n_b + 1) M \epsilon
+\end{align*}
+where the first two steps follow from the triangle inequality.
+Since the sum is ``computed in $n_a+n_b+1$ operations'', the bound of $(n_a + n_b + 1) M \epsilon$ that is obtained is small enough. The proof for subtraction is very similar.
+
+\subsection{Incorporating multiplication}
+The model above gives good guarantees but is very limited: it only works for computations that use only addition and subtraction. Multiplication does not give guarantees of the form $nM\epsilon$. However, we can still say interesting things if we take a closer look the different types of values we use in geometry:
+\begin{itemize}
+\item Adimensional ``0D'' values: e.g. angles, constant factors;% Their magnitude is typically limited by some small constant (e.g. $2\pi$ for angles).
+\item 1D values: e.g. coordinates, lengths, distances, radii;% Their magnitude is limited by a constant $M$, which can be deduced from the input limits.
+\item 2D values: e.g. areas, dot products, cross products;% Since they are based on products of 1D numbers, their magnitude is typically within a small constant factor of $M^2$.
+\item 3D values: e.g. volumes, mixed products.% For the same reasons, their magnitude is typically within a small constant factor of $M^3$.
+\end{itemize}
+
+Usually, the problem statement gives guarantees on the magnitude of coordinates, so we can find some constant $M$ so that all 1D values that will be computed in the code have a magnitude less than $M$. And since 2D and 3D values are usually created by products of 1D values, we can usually say that 2D values are bounded in magnitude by $M^2$ and 3D values by $M^3$ (we may need to multiply $M$ by a constant factor).
+
+It turns out that computations made of $+,-,\times$ and in which all $d$-dimensional values are bounded in magnitude by $M^d$ have good precision guarantees. In fact, we can prove that the absolute error of a $d$-dimensional number computed in $n$ operations is at most $M^d\left((1+\epsilon)^n-1\right)$, which assuming $n\epsilon \ll 1$ is about $nM^d\epsilon$.
+
+The proof is similar in spirit to what we did with only $+$ and $-$ earlier. Since it is a bit long, we will not detail it here, but it can be found in section~\ref{sec:proof-precision}, along with a more precise definition of the precision guarantees and its underlying assumptions.
+
+Note that this does \emph{not} cover multiplication by an adimensional factor bigger than 1: this makes sense, since for example successive multiplication by 2 of a small value could make the absolute error grow out of control even if the magnitude remains under $M^d$ for a while.
+
+In other cases, this formula $nM^d\epsilon$ gives us a quick and reliable way to estimate precision errors.
+
+\subsection{Why other operations do not work as well}\label{ss:other-operations}
+Now that we have precision guarantees for $+,-,\times$ operations, one might be tempted to try and include division as well. However, if that was possible, then it would be possible to give strong precision guarantees for line intersection, and we saw in subsection~\ref{ss:numerically-unstable} that this is not the case.
+
+The core of the problem is: if some value $x$ is very close to zero, then a small absolute error on $x$ will create a large absolute error on $1/x$. In fact, if $x$ is smaller than its absolute error, the computed value $1/x$ might be arbitrarily big, both in the positive or negative direction, and might not exist. This is why it is hard to give guarantees on the results of a division whose operands are already imprecise.
+
+An operation that also has some problematic behavior is $\sqrt{x}$. If $x$ is smaller than its absolute error, then $\sqrt{x}$ might or might not be defined in the reals. However, if we ignore the issue of existence by assuming that the theoretical and actual value of $x$ are both nonnegative, then we \emph{can} say some things on the precision.
+
+Because $\sqrt{x}$ is a concave increasing function, a small imprecision on $x$ will have the most impact on $\sqrt{x}$ near 0.
+
+\centerFig{modelling1}
+
+Therefore for a given imprecision $\delta$, the biggest imprecision on $\sqrt{x}$ it might cause is $\sqrt{\delta}$. This is usually pretty bad: if the argument of the square root had an imprecision of $nM^2\epsilon$ then in the worst case the result will have an imprecision of $\sqrt{n}M\sqrt{\epsilon}$, instead of the $nM\epsilon$ bound that we have for $+,-,\times$ operations.
+
+For example let us consider a circle $\mathcal{C}$ of radius tangent to a line $l$. If $\mathcal{C}$ gets closer to $l$ by $10^{-6}$, then the intersection points will move by about
+\[\sqrt{1^2 - (1-10^{-6})^2} \approx \sqrt{2\times 10^{-6}} = \sqrt{2} \times 10^{-3}\]
+away from the tangency point, as pictured below.
+
+\centerFig{modelling2}
+
+Note that here we have only shown that $1/x$ and $\sqrt{x}$ perform poorly on imprecise inputs. Please bear in mind that on exact inputs, the IEEE 754 guarantees that the result is the closest represented floating-point number. So when the lines and circles are defined by integers, line intersections and circle-line intersections have a relative precision error proportional to $\epsilon$ and thus an absolute error proportional to $M\epsilon$.

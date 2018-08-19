@@ -1,0 +1,22 @@
+\newcommand{\cl}[1]{
+    \newcommand{\h}{1.3}
+    \newcommand{\R}{1cm}
+    \tkzDefPoints{0/-\h/A, 0/\h/B, #1/0/C}
+    \tkzInterLC[R](A,B)(C,\R) \tkzGetPoints{I_1}{I_2}
+    
+    \tkzDrawCircle[R](C,\R)
+    \tkzDrawSegment(A,B)
+    \tkzDrawPoints(I_1,I_2)
+    
+    \tkzLabelSegment[left, pos=0.8](A,B){$l$}
+    \tkzLabelCircle[R, above right](C,\R)(30){$\mathcal{C}$}
+}%
+\begin{tikzpicture}
+\cl{1}
+\end{tikzpicture}
+\quad
+\begin{tikzpicture}
+\cl{0.95}
+\end{tikzpicture}
+
+%$\mathcal{C}$ moves a bit $\rightarrow$ intersections move a lot

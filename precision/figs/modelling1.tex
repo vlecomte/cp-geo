@@ -1,0 +1,25 @@
+\newcommand{\sqrtFig}[1]{
+    \pgfmathsetmacro{\xa}{#1}
+    \pgfmathsetmacro{\xb}{#1+0.3}
+    \pgfmathsetmacro{\ya}{sqrt(\xa)}
+    \pgfmathsetmacro{\yb}{sqrt(\xb)}
+    \newcommand{\off}{0.15}
+    \draw[dotted, gray] (\xa,0) -- (\xa,\ya) -- (0,\ya);
+    \draw[dotted, gray] (\xb,0) -- (\xb,\yb) -- (0,\yb);
+    \draw[|-|, gray] (\xa,-\off) -- (\xb,-\off) node[black, midway, below=0.1] {$\delta$};
+    \draw[|-|, gray] (-\off,\ya) -- (-\off,\yb);% node[black, midway, left=0.1] {$\sqrt{x+\delta}-\sqrt{x}$};
+    \draw[->] (-0.5,0) -- (3,0) node[below=0.2] {$x$};
+    \draw[->] (0,-0.5) -- (0,2) node[left=0.2] {$\sqrt{x}$};
+    \draw[domain=0:1.6,smooth,variable=\y]  plot ({\y*\y},{\y});
+}%
+\vc{
+    \begin{tikzpicture}
+    \sqrtFig{0.2}
+    \end{tikzpicture}
+}{close to 0 $\Rightarrow$ big effect}
+\quad
+\vc{
+    \begin{tikzpicture}
+    \sqrtFig{1.5}
+    \end{tikzpicture}
+}{far from 0 $\Rightarrow$ small effect}
