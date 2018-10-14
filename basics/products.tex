@@ -92,19 +92,19 @@ In other words, $\orient(A,B,C)$ is positive if when going from $A$ to $B$ to $C
 
 Its value is conserved by cyclic rotation, that is \[\orient(A,B,C) = \orient(B,C,A) = \orient(C,A,B)\] while swapping any two arguments switches the sign.
 
-As an example of use, suppose we want to check if point $X$ lies in the angle formed by lines $AB$ and $AC$. We can follow this procedure:
+As an example of use, suppose we want to check if point $P$ lies in the angle formed by lines $AB$ and $AC$. We can follow this procedure:
 \begin{enumerate}
 \item check that $\orient(A,B,C) \neq 0$ (otherwise the question is invalid);
 \item if $\orient(A,B,C) < 0$, swap $B$ and $C$;
 \centerFig{products6}
-\item $X$ is in the angle iff $\orient(A,B,X) \geq 0$ and $\orient(A,C,X) \leq 0$.
+\item $P$ is in the angle iff $\orient(A,B,P) \geq 0$ and $\orient(A,C,P) \leq 0$.
 \centerFig{products7}
 \end{enumerate}
 \begin{lstlisting}
-bool inAngle(pt a, pt b, pt c, pt x) {
+bool inAngle(pt a, pt b, pt c, pt p) {
     assert(orient(a,b,c) != 0);
     if (orient(a,b,c) < 0) swap(b,c);
-    return orient(a,b,x) >= 0 && orient(a,c,x) <= 0;
+    return orient(a,b,p) >= 0 && orient(a,c,p) <= 0;
 }
 \end{lstlisting}
 
